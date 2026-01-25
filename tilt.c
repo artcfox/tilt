@@ -117,8 +117,102 @@ const VRAM_PTR_TYPE* MapPieceToTileMapForBoardPosition(uint8_t piece, uint8_t x,
   return map_piece;
 }
 
+/*
+ * BCD_addConstant
+ *
+ * Adds a constant (binary number) to a BCD number
+ *
+ * num [in, out]
+ *   The BCD number
+ *
+ * digits [in]
+ *   The number of digits in the BCD number, num
+ *
+ * x [in]
+ *   The binary value to be added to the BCD number
+ *
+ *   Note: The largest value that can be safely added to a BCD number
+ *         is BCD_ADD_CONSTANT_MAX. If the result would overflow num,
+ *         then num will be clamped to its maximum value (all 9's).
+ *
+ * Returns:
+ *   A boolean that is true if num has been clamped to its maximum
+ *   value (all 9's), or false otherwise.
+ */
+#define BCD_ADD_CONSTANT_MAX 244
+static bool BCD_addConstant(uint8_t* const num, const uint8_t digits, uint8_t x)
+{
+  for (uint8_t i = 0; i < digits; ++i) {
+    uint8_t val = num[i] + x;
+    if (val < 10) { // speed up the common cases
+      num[i] = val;
+      x = 0;
+      break;
+    } else if (val < 20) {
+      num[i] = val - 10;
+      x = 1;
+    } else if (val < 30) {
+      num[i] = val - 20;
+      x = 2;
+    } else if (val < 40) {
+      num[i] = val - 30;
+      x = 3;
+    } else { // handle the rest of the cases (up to 255 - 9) with a loop
+      for (uint8_t j = 5; j < 26; ++j) {
+        if (val < (j * 10)) {
+          num[i] = val - ((j - 1) * 10);
+          x = (j - 1);
+          break;
+        }
+      }
+    }
+  }
+
+  if (x > 0) {
+    for (uint8_t i = 0; i < digits; ++i)
+      num[i] = 9;
+    return true;
+  }
+
+  return false;
+}
+
+#define TILE_GREEN 2
+#define TILE_YELLOW 3
+#define TILE_BLUE 4
+#define TILE_RED 5
+
+uint8_t GetLevelColor(uint8_t level)
+{
+  if ((level >= 1) && (level <= 10))
+    return TILE_GREEN;
+  else if ((level >= 11) && (level <= 20))
+    return TILE_YELLOW;
+  else if ((level >= 21) && (level <= 30))
+    return TILE_BLUE;
+  else if ((level >= 31) && (level <= 40))
+    return TILE_RED;
+  return 0;
+}
+
+#define TILE_NUM_START_DIGITS 6
+
 static void LoadLevel(const uint8_t level)
 {
+  // Draw LEVEL ##
+  DrawMap((SCREEN_TILES_H - 8) / 2, ENTIRE_GAMEBOARD_TOP - 3, map_level);
+  uint8_t digits[2] = {0};
+  BCD_addConstant(digits, 2, level);
+  SetTile((SCREEN_TILES_H - 8) / 2 + 6, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[1]);
+  SetTile((SCREEN_TILES_H - 8) / 2 + 7, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[0]);
+
+  uint8_t levelColor = GetLevelColor(level);
+  SetTile((SCREEN_TILES_H - 8) / 2 - 3, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+  SetTile((SCREEN_TILES_H - 8) / 2 - 2, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+  SetTile((SCREEN_TILES_H - 8) / 2 + 9, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+  SetTile((SCREEN_TILES_H - 8) / 2 + 10, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+
+
   DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP, map_board);
 
   const uint16_t levelOffset = (level - 1) * LEVEL_SIZE;
