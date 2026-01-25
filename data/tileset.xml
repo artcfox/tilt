@@ -5,6 +5,7 @@
     <tiles var-name="tileset"/>
     <maps pointers-size="8">
       <map left="17" top="0" width="5" height="1" var-name="map_level" />
+
       <map left="1" top="2" width="2" height="2" var-name="map_stopper" />
       <map left="4" top="2" width="2" height="2" var-name="map_stopper_t" />
       <map left="7" top="2" width="2" height="2" var-name="map_stopper_l" />
