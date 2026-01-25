@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<gfx-xform version="1">
+  <input file="data/titlescreen.png" type="png" tile-width="8" tile-height="8" />
+  <output file="data/titlescreen.inc" remove-duplicate-tiles="true">
+    <tiles var-name="titlescreen"/>
+    <maps pointers-size="8">
+      <map left="0" top="2"  width="24"  height="9"  var-name="map_logo" />
+    </maps>
+  </output>
+</gfx-xform>

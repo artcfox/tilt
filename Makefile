@@ -27,12 +27,12 @@ KERNEL_OPTIONS += -DINTRO_LOGO=0
 KERNEL_OPTIONS += -DSCROLLING=0
 KERNEL_OPTIONS += -DSOUND_MIXER=1
 KERNEL_OPTIONS += -DSOUND_CHANNEL_5_ENABLE=1
-KERNEL_OPTIONS += -DRAM_TILES_COUNT=30
+KERNEL_OPTIONS += -DRAM_TILES_COUNT=32
 #KERNEL_OPTIONS += -DSCREEN_TILES_V=16
 #KERNEL_OPTIONS += -DSCREEN_TILES_H=16
 KERNEL_OPTIONS += -DTRANSLUCENT_COLOR=0xf6
 KERNEL_OPTIONS += -DVRAM_TILES_V=28
-KERNEL_OPTIONS += -DVRAM_TILES_H=28
+KERNEL_OPTIONS += -DVRAM_TILES_H=32
 KERNEL_OPTIONS += -DOVERLAY_LINES=0
 KERNEL_OPTIONS += -DRESOLUTION_EXT=1
 #KERNEL_OPTIONS += -DRT_ALIGNED=1
@@ -95,7 +95,7 @@ INCLUDES = -I"$(KERNEL_DIR)"
 DEPS  = Makefile
 
 ## Build
-all: ./data/tileset.inc ./data/spriteset.inc ./data/midisong.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze
+all: ./data/titlescreen.inc ./data/tileset.inc ./data/spriteset.inc ./data/midisong.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze
 
 ## Compile Kernel files (prefix with .)
 .uzeboxVideoEngineCore.o: $(KERNEL_DIR)/uzeboxVideoEngineCore.s $(DEPS)
@@ -119,6 +119,9 @@ all: ./data/tileset.inc ./data/spriteset.inc ./data/midisong.inc $(TARGET) $(GAM
 
 .stackmon.o: stackmon.c $(DEPS)
 	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
+
+./data/titlescreen.inc: ./data/titlescreen.png ./data/titlescreen.xml
+	$(UZEBIN_DIR)/gconvert ./data/titlescreen.xml
 
 ./data/tileset.inc: ./data/tileset.png ./data/tileset.xml
 	$(UZEBIN_DIR)/gconvert ./data/tileset.xml
@@ -153,7 +156,7 @@ $(TARGET): $(OBJECTS) $(DEPS)
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf ./data/tileset.inc ./data/spriteset.inc ./data/midisong.h ./data/midisong.inc $(OBJECTS) $(TARGET) $(GAME).eep $(GAME).hex $(GAME).lss $(GAME).map $(GAME).uze $(OBJECTS:.o=.o.d)
+	-rm -rf ./data/titlescreen.inc ./data/tileset.inc ./data/spriteset.inc ./data/midisong.h ./data/midisong.inc $(OBJECTS) $(TARGET) $(GAME).eep $(GAME).hex $(GAME).lss $(GAME).map $(GAME).uze $(OBJECTS:.o=.o.d)
 
 ## Proper automatic dependency tracking requires the *.o and *.o.d files to be
 ## generated in the top level directory, so we hide the *.o and *.o.d files
