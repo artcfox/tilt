@@ -725,14 +725,20 @@ int main()
   ClearVram();
   SetTileTable(tileset);
   //SetSpritesTileBank(0, mysprites);
-  SetSpritesTileBank(1, tileset);
+  SetSpritesTileBank(0, tileset);
   SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
 
   //ResumeSong();
 
   currentLevel = 1;
   LoadLevel(currentLevel);
+#if 0
+  uint8_t x = 0;
+  int8_t xDir = 1;
 
+  uint8_t y = 0;
+  int8_t yDir = 1;
+#endif
   for (;;) {
     WaitVsync(1);
 
@@ -741,7 +747,31 @@ int main()
     buttons.held = ReadJoypad(0);
     buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
     buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
+#if 0
+    x += xDir * 2;
+    if (x == SCREEN_TILES_H * 8 - 16)
+      xDir *= -1;
+    else if (x == 0)
+      xDir *= -1;
 
+    y += yDir * 2;
+    if (y == SCREEN_TILES_V * 8 - 16)
+      yDir *= -1;
+    else if (y == 0)
+      yDir *= -1;
+
+    MapSprite2(0, map_green, 0);
+    MoveSprite(0, (SCREEN_TILES_H * 8 - 16) - x, 17 * 8, 2, 2);
+    MapSprite2(4, map_blue, 0);
+    MoveSprite(4, x, 4 * 8, 2, 2);
+
+    MapSprite2(8, map_green, 0);
+    MoveSprite(8, 7 * 8, (SCREEN_TILES_V * 8 - 16) - y, 2, 2);
+    MapSprite2(12, map_blue, 0);
+    MoveSprite(12, 14 * 8, y, 2, 2);
+    MapSprite2(16, map_green, 0);
+    MoveSprite(16, 24 * 8, (SCREEN_TILES_V * 8 - 16) - y, 2, 2);
+#endif
     if (buttons.pressed == BTN_SR) {
       currentLevel++;
       if (currentLevel > 40)
