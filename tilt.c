@@ -70,6 +70,8 @@ uint8_t board[BOARD_HEIGHT][BOARD_WIDTH] = {
 
 #define ENTIRE_GAMEBOARD_LEFT ((SCREEN_TILES_H - MAP_BOARD_WIDTH) / 2)
 #define ENTIRE_GAMEBOARD_TOP ((SCREEN_TILES_V - MAP_BOARD_HEIGHT) / 2)
+#define GAMEBOARD_ACTIVE_AREA_LEFT (ENTIRE_GAMEBOARD_LEFT + 2)
+#define GAMEBOARD_ACTIVE_AREA_TOP (ENTIRE_GAMEBOARD_TOP + 2)
 #define GAMEPIECE_WIDTH 2
 #define GAMEPIECE_HEIGHT 2
 
@@ -98,6 +100,8 @@ const VRAM_PTR_TYPE* MapPieceToTileMapForBoardPosition(uint8_t piece, uint8_t x,
       map_piece = map_green_r;
     else if (x == 2 && y == 3)
       map_piece = map_green_b;
+    else if (x == 2 && y == 2)
+      map_piece = map_green_h;
     else
       map_piece = map_green;
     break;
@@ -110,11 +114,26 @@ const VRAM_PTR_TYPE* MapPieceToTileMapForBoardPosition(uint8_t piece, uint8_t x,
       map_piece = map_blue_r;
     else if (x == 2 && y == 3)
       map_piece = map_blue_b;
+    else if (x == 2 && y == 2)
+      map_piece = map_blue_h;
     else
       map_piece = map_blue;
     break;
   }
   return map_piece;
+}
+
+const VRAM_PTR_TYPE* GetBlankTileMapForBoardPosition(uint8_t x, uint8_t y) {
+  if (x == 2 && y == 1)
+    return map_grid_t;
+  else if (x == 1 && y == 2)
+    return  map_grid_l;
+  else if (x == 3 && y == 2)
+    return map_grid_r;
+  else if (x == 2 && y == 3)
+    return map_grid_b;
+  else
+    return map_grid;
 }
 
 /*
@@ -212,7 +231,6 @@ static void LoadLevel(const uint8_t level)
   SetTile((SCREEN_TILES_H - 8) / 2 + 9, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
   SetTile((SCREEN_TILES_H - 8) / 2 + 10, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
 
-
   DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP, map_board);
 
   const uint16_t levelOffset = (level - 1) * LEVEL_SIZE;
@@ -222,8 +240,8 @@ static void LoadLevel(const uint8_t level)
       board[y][x] = piece;
 
       if (piece == S || piece == G || piece == B)
-        DrawMap(ENTIRE_GAMEBOARD_LEFT + 2 + GAMEPIECE_WIDTH * x,
-                ENTIRE_GAMEBOARD_TOP + 2 + GAMEPIECE_HEIGHT * y,
+        DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + GAMEPIECE_WIDTH * x,
+                GAMEBOARD_ACTIVE_AREA_TOP + GAMEPIECE_HEIGHT * y,
                 MapPieceToTileMapForBoardPosition(piece, x, y));
     }
 }
@@ -238,6 +256,16 @@ struct MOVE_INFO {
   uint8_t xEnd;
   uint8_t yEnd;
   bool fellDownHole;
+
+  // Animation stuff
+  bool doneMoving;
+  // uint8_t tag; // not needed, use array index * 4
+
+  // Should be able to reduce this to just position and velocity
+  int16_t x;
+  int16_t y;
+  int16_t dx;
+  int16_t dy;
 } __attribute__ ((packed));
 
 #define MAX_MOVABLE_PIECES 5
@@ -436,9 +464,11 @@ static void UpdateBoardAfterMove()
   }
 }
 
+/*
 static void RedrawBoard()
 {
   DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP, map_board);
+
   for (uint8_t y = 0; y < BOARD_HEIGHT; ++y)
     for (uint8_t x = 0; x < BOARD_WIDTH; ++x) {
       uint8_t piece = board[y][x];
@@ -447,6 +477,85 @@ static void RedrawBoard()
                 ENTIRE_GAMEBOARD_TOP + 2 + GAMEPIECE_HEIGHT * y,
                 MapPieceToTileMapForBoardPosition(piece, x, y));
     }
+}
+*/
+
+// This function expects moveInfo to be populated before calling
+static void AnimateBoard(uint8_t direction) {
+  // Hide all sprites
+  for (uint8_t i = 0; i < MAX_SPRITES; ++i)
+    sprites[i].y = SCREEN_TILES_V * TILE_HEIGHT; // OFF_SCREEN;
+
+  // Turn all G and B tile pieces into sprites, and draw a blank grid where they were
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    MapSprite2(move * 4, moveInfo[move].piece == G ? map_green : map_blue, 0);
+    MoveSprite(move * 4,
+               TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2),
+               TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2),
+               2, 2);
+
+    DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2,
+            GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2,
+            GetBlankTileMapForBoardPosition(moveInfo[move].xStart, moveInfo[move].yStart));
+  }
+
+  // Animate them (crudely for now)
+  WaitVsync(5);
+
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+    MoveSprite(move * 4,
+               TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + (moveInfo[move].xStart * 2 + moveInfo[move].xEnd * 2) / 2),
+               TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + (moveInfo[move].yStart * 2 + moveInfo[move].yEnd * 2) / 2),
+               2, 2);
+  }
+  WaitVsync(5);
+
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+    MoveSprite(move * 4,
+               TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2),
+               TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2),
+               2, 2);
+  }
+
+  // Turn all G and B sprites back into tile pieces in their end locations, and hide all the sprites
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+    DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + GAMEPIECE_WIDTH * moveInfo[move].xEnd,
+            GAMEBOARD_ACTIVE_AREA_TOP + GAMEPIECE_HEIGHT * moveInfo[move].yEnd,
+            MapPieceToTileMapForBoardPosition(moveInfo[move].piece, moveInfo[move].xEnd, moveInfo[move].yEnd));
+  }
+
+  for (uint8_t i = 0; i < MAX_SPRITES; ++i)
+    sprites[i].y = SCREEN_TILES_V * TILE_HEIGHT; // OFF_SCREEN;
+
+
+  /*
+  bool allDoneMoving = true;
+  while (!allDoneMoving) {
+    UpdatePhysics(direction);
+
+    for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+      if (moveInfo[move].piece == 0)
+        break;
+
+        MoveSprite(move * 4,
+                   NEAREST_SCREEN_PIXEL(moveInfo[move].x),
+                   NEAREST_SCREEN_PIXEL(moveInfo[move].y),
+                   2, 2);
+
+      allDoneMoving &= moveInfo[move].doneMoving;
+    }
+    WaitVsync(1);
+  }
+  */
 }
 
 const uint8_t rf_title[] PROGMEM = {
@@ -732,13 +841,7 @@ int main()
 
   currentLevel = 1;
   LoadLevel(currentLevel);
-#if 0
-  uint8_t x = 0;
-  int8_t xDir = 1;
 
-  uint8_t y = 0;
-  int8_t yDir = 1;
-#endif
   for (;;) {
     WaitVsync(1);
 
@@ -747,31 +850,7 @@ int main()
     buttons.held = ReadJoypad(0);
     buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
     buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
-#if 0
-    x += xDir * 2;
-    if (x == SCREEN_TILES_H * 8 - 16)
-      xDir *= -1;
-    else if (x == 0)
-      xDir *= -1;
 
-    y += yDir * 2;
-    if (y == SCREEN_TILES_V * 8 - 16)
-      yDir *= -1;
-    else if (y == 0)
-      yDir *= -1;
-
-    MapSprite2(0, map_green, 0);
-    MoveSprite(0, (SCREEN_TILES_H * 8 - 16) - x, 17 * 8, 2, 2);
-    MapSprite2(4, map_blue, 0);
-    MoveSprite(4, x, 4 * 8, 2, 2);
-
-    MapSprite2(8, map_green, 0);
-    MoveSprite(8, 7 * 8, (SCREEN_TILES_V * 8 - 16) - y, 2, 2);
-    MapSprite2(12, map_blue, 0);
-    MoveSprite(12, 14 * 8, y, 2, 2);
-    MapSprite2(16, map_green, 0);
-    MoveSprite(16, 24 * 8, (SCREEN_TILES_V * 8 - 16) - y, 2, 2);
-#endif
     if (buttons.pressed == BTN_SR) {
       currentLevel++;
       if (currentLevel > 40)
@@ -784,22 +863,27 @@ int main()
       LoadLevel(currentLevel);
     }
 
+    // Beat Level 25
     if (buttons.pressed == BTN_LEFT) {
       TiltBoardLeft();
       UpdateBoardAfterMove();
-      RedrawBoard();
+      AnimateBoard(BTN_LEFT);
+      //RedrawBoard();
     } else if (buttons.pressed == BTN_UP) {
       TiltBoardUp();
       UpdateBoardAfterMove();
-      RedrawBoard();
+      AnimateBoard(BTN_UP);
+      //RedrawBoard();
     } else if (buttons.pressed == BTN_RIGHT) {
       TiltBoardRight();
       UpdateBoardAfterMove();
-      RedrawBoard();
+      AnimateBoard(BTN_RIGHT);
+      //RedrawBoard();
     } else if (buttons.pressed == BTN_DOWN) {
       TiltBoardDown();
       UpdateBoardAfterMove();
-      RedrawBoard();
+      AnimateBoard(BTN_DOWN);
+      //RedrawBoard();
     }
   }
 }
