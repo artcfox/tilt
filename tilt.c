@@ -480,8 +480,364 @@ static void RedrawBoard()
 }
 */
 
+static void SameTimeAnimation()
+{
+  WaitVsync(2);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x1_2 = (xStart + xEnd) / 2;
+    uint16_t y1_2 = (yStart + yEnd) / 2;
+
+    uint16_t x1_4 = (xStart + x1_2) / 2;
+    uint16_t y1_4 = (yStart + y1_2) / 2;
+
+    uint16_t x3_4 = (x1_2 + xEnd) / 2;
+    uint16_t y3_4 = (y1_2 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x1_4,
+               y1_4,
+               2, 2);
+  }
+
+  WaitVsync(2);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x1_2 = (xStart + xEnd) / 2;
+    uint16_t y1_2 = (yStart + yEnd) / 2;
+
+    uint16_t x1_4 = (xStart + x1_2) / 2;
+    uint16_t y1_4 = (yStart + y1_2) / 2;
+
+    uint16_t x3_4 = (x1_2 + xEnd) / 2;
+    uint16_t y3_4 = (y1_2 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x1_2,
+               y1_2,
+               2, 2);
+  }
+
+  WaitVsync(2);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x1_2 = (xStart + xEnd) / 2;
+    uint16_t y1_2 = (yStart + yEnd) / 2;
+
+    uint16_t x1_4 = (xStart + x1_2) / 2;
+    uint16_t y1_4 = (yStart + y1_2) / 2;
+
+    uint16_t x3_4 = (x1_2 + xEnd) / 2;
+    uint16_t y3_4 = (y1_2 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x3_4,
+               y3_4,
+               2, 2);
+  }
+
+  WaitVsync(2);
+}
+
+static void SameTimeAnimation2()
+{
+  WaitVsync(1);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x4_8 = (xStart + xEnd) / 2;
+    uint16_t y4_8 = (yStart + yEnd) / 2;
+
+    uint16_t x2_8 = (xStart + x4_8) / 2;
+    uint16_t y2_8 = (yStart + y4_8) / 2;
+
+    uint16_t x1_8 = (xStart + x2_8) / 2;
+    uint16_t y1_8 = (yStart + y2_8) / 2;
+
+    uint16_t x6_8 = (x4_8 + xEnd) / 2;
+    uint16_t y6_8 = (y4_8 + yEnd) / 2;
+
+    uint16_t x3_8 = (x2_8 + x4_8) / 2;
+    uint16_t y3_8 = (y2_8 + y4_8) / 2;
+
+    uint16_t x5_8 = (x4_8 + x6_8) / 2;
+    uint16_t y5_8 = (y4_8 + y6_8) / 2;
+
+    uint16_t x7_8 = (x6_8 + xEnd) / 2;
+    uint16_t y7_8 = (y6_8 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x1_8,
+               y1_8,
+               2, 2);
+  }
+
+  WaitVsync(1);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x4_8 = (xStart + xEnd) / 2;
+    uint16_t y4_8 = (yStart + yEnd) / 2;
+
+    uint16_t x2_8 = (xStart + x4_8) / 2;
+    uint16_t y2_8 = (yStart + y4_8) / 2;
+
+    uint16_t x1_8 = (xStart + x2_8) / 2;
+    uint16_t y1_8 = (yStart + y2_8) / 2;
+
+    uint16_t x6_8 = (x4_8 + xEnd) / 2;
+    uint16_t y6_8 = (y4_8 + yEnd) / 2;
+
+    uint16_t x3_8 = (x2_8 + x4_8) / 2;
+    uint16_t y3_8 = (y2_8 + y4_8) / 2;
+
+    uint16_t x5_8 = (x4_8 + x6_8) / 2;
+    uint16_t y5_8 = (y4_8 + y6_8) / 2;
+
+    uint16_t x7_8 = (x6_8 + xEnd) / 2;
+    uint16_t y7_8 = (y6_8 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x2_8,
+               y2_8,
+               2, 2);
+  }
+
+  WaitVsync(1);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x4_8 = (xStart + xEnd) / 2;
+    uint16_t y4_8 = (yStart + yEnd) / 2;
+
+    uint16_t x2_8 = (xStart + x4_8) / 2;
+    uint16_t y2_8 = (yStart + y4_8) / 2;
+
+    uint16_t x1_8 = (xStart + x2_8) / 2;
+    uint16_t y1_8 = (yStart + y2_8) / 2;
+
+    uint16_t x6_8 = (x4_8 + xEnd) / 2;
+    uint16_t y6_8 = (y4_8 + yEnd) / 2;
+
+    uint16_t x3_8 = (x2_8 + x4_8) / 2;
+    uint16_t y3_8 = (y2_8 + y4_8) / 2;
+
+    uint16_t x5_8 = (x4_8 + x6_8) / 2;
+    uint16_t y5_8 = (y4_8 + y6_8) / 2;
+
+    uint16_t x7_8 = (x6_8 + xEnd) / 2;
+    uint16_t y7_8 = (y6_8 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x3_8,
+               y3_8,
+               2, 2);
+  }
+
+  WaitVsync(1);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x4_8 = (xStart + xEnd) / 2;
+    uint16_t y4_8 = (yStart + yEnd) / 2;
+
+    uint16_t x2_8 = (xStart + x4_8) / 2;
+    uint16_t y2_8 = (yStart + y4_8) / 2;
+
+    uint16_t x1_8 = (xStart + x2_8) / 2;
+    uint16_t y1_8 = (yStart + y2_8) / 2;
+
+    uint16_t x6_8 = (x4_8 + xEnd) / 2;
+    uint16_t y6_8 = (y4_8 + yEnd) / 2;
+
+    uint16_t x3_8 = (x2_8 + x4_8) / 2;
+    uint16_t y3_8 = (y2_8 + y4_8) / 2;
+
+    uint16_t x5_8 = (x4_8 + x6_8) / 2;
+    uint16_t y5_8 = (y4_8 + y6_8) / 2;
+
+    uint16_t x7_8 = (x6_8 + xEnd) / 2;
+    uint16_t y7_8 = (y6_8 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x4_8,
+               y4_8,
+               2, 2);
+  }
+
+  WaitVsync(1);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x4_8 = (xStart + xEnd) / 2;
+    uint16_t y4_8 = (yStart + yEnd) / 2;
+
+    uint16_t x2_8 = (xStart + x4_8) / 2;
+    uint16_t y2_8 = (yStart + y4_8) / 2;
+
+    uint16_t x1_8 = (xStart + x2_8) / 2;
+    uint16_t y1_8 = (yStart + y2_8) / 2;
+
+    uint16_t x6_8 = (x4_8 + xEnd) / 2;
+    uint16_t y6_8 = (y4_8 + yEnd) / 2;
+
+    uint16_t x3_8 = (x2_8 + x4_8) / 2;
+    uint16_t y3_8 = (y2_8 + y4_8) / 2;
+
+    uint16_t x5_8 = (x4_8 + x6_8) / 2;
+    uint16_t y5_8 = (y4_8 + y6_8) / 2;
+
+    uint16_t x7_8 = (x6_8 + xEnd) / 2;
+    uint16_t y7_8 = (y6_8 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x5_8,
+               y5_8,
+               2, 2);
+  }
+
+  WaitVsync(1);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x4_8 = (xStart + xEnd) / 2;
+    uint16_t y4_8 = (yStart + yEnd) / 2;
+
+    uint16_t x2_8 = (xStart + x4_8) / 2;
+    uint16_t y2_8 = (yStart + y4_8) / 2;
+
+    uint16_t x1_8 = (xStart + x2_8) / 2;
+    uint16_t y1_8 = (yStart + y2_8) / 2;
+
+    uint16_t x6_8 = (x4_8 + xEnd) / 2;
+    uint16_t y6_8 = (y4_8 + yEnd) / 2;
+
+    uint16_t x3_8 = (x2_8 + x4_8) / 2;
+    uint16_t y3_8 = (y2_8 + y4_8) / 2;
+
+    uint16_t x5_8 = (x4_8 + x6_8) / 2;
+    uint16_t y5_8 = (y4_8 + y6_8) / 2;
+
+    uint16_t x7_8 = (x6_8 + xEnd) / 2;
+    uint16_t y7_8 = (y6_8 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x6_8,
+               y6_8,
+               2, 2);
+  }
+
+  WaitVsync(1);
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    uint16_t x4_8 = (xStart + xEnd) / 2;
+    uint16_t y4_8 = (yStart + yEnd) / 2;
+
+    uint16_t x2_8 = (xStart + x4_8) / 2;
+    uint16_t y2_8 = (yStart + y4_8) / 2;
+
+    uint16_t x1_8 = (xStart + x2_8) / 2;
+    uint16_t y1_8 = (yStart + y2_8) / 2;
+
+    uint16_t x6_8 = (x4_8 + xEnd) / 2;
+    uint16_t y6_8 = (y4_8 + yEnd) / 2;
+
+    uint16_t x3_8 = (x2_8 + x4_8) / 2;
+    uint16_t y3_8 = (y2_8 + y4_8) / 2;
+
+    uint16_t x5_8 = (x4_8 + x6_8) / 2;
+    uint16_t y5_8 = (y4_8 + y6_8) / 2;
+
+    uint16_t x7_8 = (x6_8 + xEnd) / 2;
+    uint16_t y7_8 = (y6_8 + yEnd) / 2;
+
+    MoveSprite(move * 4,
+               x7_8,
+               y7_8,
+               2, 2);
+  }
+
+  WaitVsync(1);
+}
+
 // This function expects moveInfo to be populated before calling
-static void AnimateBoard(uint8_t direction) {
+// Maybe make it so if you press a direction while it's animating, it skips directly to the end?
+static void AnimateBoard(uint8_t direction)
+{
   // Hide all sprites
   for (uint8_t i = 0; i < MAX_SPRITES; ++i)
     sprites[i].y = SCREEN_TILES_V * TILE_HEIGHT; // OFF_SCREEN;
@@ -503,17 +859,7 @@ static void AnimateBoard(uint8_t direction) {
   }
 
   // Animate them (crudely for now)
-  WaitVsync(5);
-
-  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-    if (moveInfo[move].piece == 0)
-      break;
-    MoveSprite(move * 4,
-               TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + (moveInfo[move].xStart * 2 + moveInfo[move].xEnd * 2) / 2),
-               TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + (moveInfo[move].yStart * 2 + moveInfo[move].yEnd * 2) / 2),
-               2, 2);
-  }
-  WaitVsync(5);
+  SameTimeAnimation2();
 
   for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
     if (moveInfo[move].piece == 0)
