@@ -36,8 +36,6 @@
 //#include "data/patches.inc"
 //#include "data/midisong.h"
 
-#define NELEMS(x) (sizeof(x)/sizeof(x[0]))
-
 typedef struct {
   uint16_t held;
   uint16_t prev;
@@ -56,6 +54,8 @@ typedef struct {
 #define BOARD_OFFSET_IN_LEVEL 0
 
 uint8_t currentLevel;
+bool youWin;
+bool youLose;
 
 // The configuration of the playing board
 uint8_t board[BOARD_HEIGHT][BOARD_WIDTH] = {
@@ -123,17 +123,17 @@ const VRAM_PTR_TYPE* MapPieceToTileMapForBoardPosition(uint8_t piece, uint8_t x,
   return map_piece;
 }
 
-const VRAM_PTR_TYPE* GetBlankTileMapForBoardPosition(uint8_t x, uint8_t y) {
+const VRAM_PTR_TYPE* MapBoardPositionToGridTileMap(uint8_t x, uint8_t y) {
+  const VRAM_PTR_TYPE* map_piece = map_grid;
   if (x == 2 && y == 1)
-    return map_grid_t;
+    map_piece = map_grid_t;
   else if (x == 1 && y == 2)
-    return  map_grid_l;
+    map_piece = map_grid_l;
   else if (x == 3 && y == 2)
-    return map_grid_r;
+    map_piece = map_grid_r;
   else if (x == 2 && y == 3)
-    return map_grid_b;
-  else
-    return map_grid;
+    map_piece = map_grid_b;
+  return map_piece;
 }
 
 /*
@@ -218,6 +218,9 @@ uint8_t GetLevelColor(uint8_t level)
 
 static void LoadLevel(const uint8_t level)
 {
+  youWin = false;
+  youLose = false;
+
   // Draw LEVEL ##
   DrawMap((SCREEN_TILES_H - 8) / 2, ENTIRE_GAMEBOARD_TOP - 3, map_level);
   uint8_t digits[2] = {0};
@@ -297,6 +300,8 @@ static void TiltBoardLeft() {
 
           if (xEnd - 1 == 2 && y == 2) {
             moveInfo[currentIndex].fellDownHole = true;
+            if (moveInfo[currentIndex].piece == B)
+              youLose = true;
             break;
           }
 
@@ -340,6 +345,8 @@ static void TiltBoardUp() {
 
           if (yEnd - 1 == 2 && x == 2) {
             moveInfo[currentIndex].fellDownHole = true;
+            if (moveInfo[currentIndex].piece == B)
+              youLose = true;
             break;
           }
 
@@ -384,6 +391,8 @@ static void TiltBoardRight() {
 
           if (xEnd + 1 == 2 && y == 2) {
             moveInfo[currentIndex].fellDownHole = true;
+            if (moveInfo[currentIndex].piece == B)
+              youLose = true;
             break;
           }
 
@@ -428,6 +437,8 @@ static void TiltBoardDown() {
 
           if (yEnd + 1 == 2 && x == 2) {
             moveInfo[currentIndex].fellDownHole = true;
+            if (moveInfo[currentIndex].piece == B)
+              youLose = true;
             break;
           }
 
@@ -456,12 +467,18 @@ static void UpdateBoardAfterMove()
     board[moveInfo[move].yStart][moveInfo[move].xStart] = 0;
   }
   // Put pieces back on the board
+  uint8_t greenCount = 0;
   for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
     if (moveInfo[move].piece == 0)
       break;
-    if (!moveInfo[move].fellDownHole)
+    if (!moveInfo[move].fellDownHole) {
       board[moveInfo[move].yEnd][moveInfo[move].xEnd] = moveInfo[move].piece;
+      if (moveInfo[move].piece == G)
+        ++greenCount;
+    }
   }
+  if (!youLose && greenCount == 0)
+    youWin = true;
 }
 
 /*
@@ -618,7 +635,7 @@ static void AnimateBoard(uint8_t direction)
 
     DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2,
             GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2,
-            GetBlankTileMapForBoardPosition(moveInfo[move].xStart, moveInfo[move].yStart));
+            MapBoardPositionToGridTileMap(moveInfo[move].xStart, moveInfo[move].yStart));
   }
 
   // Animate them
@@ -637,18 +654,27 @@ static void AnimateBoard(uint8_t direction)
   for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
     if (moveInfo[move].piece == 0)
       break;
-    DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + GAMEPIECE_WIDTH * moveInfo[move].xEnd,
-            GAMEBOARD_ACTIVE_AREA_TOP + GAMEPIECE_HEIGHT * moveInfo[move].yEnd,
-            MapPieceToTileMapForBoardPosition(moveInfo[move].piece, moveInfo[move].xEnd, moveInfo[move].yEnd));
+    if (moveInfo[move].piece == G) // Draw green sliders first in case both fell in the exit hole at the same time
+      DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + GAMEPIECE_WIDTH * moveInfo[move].xEnd,
+              GAMEBOARD_ACTIVE_AREA_TOP + GAMEPIECE_HEIGHT * moveInfo[move].yEnd,
+              MapPieceToTileMapForBoardPosition(moveInfo[move].piece, moveInfo[move].xEnd, moveInfo[move].yEnd));
+  }
+
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+    if (moveInfo[move].piece == B) // Ensure blue sliders that fell in the hole will always be drawn on top
+      DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + GAMEPIECE_WIDTH * moveInfo[move].xEnd,
+              GAMEBOARD_ACTIVE_AREA_TOP + GAMEPIECE_HEIGHT * moveInfo[move].yEnd,
+              MapPieceToTileMapForBoardPosition(moveInfo[move].piece, moveInfo[move].xEnd, moveInfo[move].yEnd));
   }
 
   for (uint8_t i = 0; i < MAX_SPRITES; ++i)
     sprites[i].y = SCREEN_TILES_V * TILE_HEIGHT; // OFF_SCREEN;
 
-
   /*
   bool allDoneMoving = true;
-  while (!allDoneMoving) {
+  do {
     UpdatePhysics(direction);
 
     for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
@@ -663,7 +689,7 @@ static void AnimateBoard(uint8_t direction)
       allDoneMoving &= moveInfo[move].doneMoving;
     }
     WaitVsync(1);
-  }
+  } while (!allDoneMoving);
   */
 }
 
@@ -728,6 +754,8 @@ const char pgm_INVENTED_BY1[] PROGMEM = "INVENTEDaBYaVESAaTIMONEN[";
 const char pgm_INVENTED_BY2[] PROGMEM = "TIMOaJOKITALO";
 const char pgm_START_GAME[] PROGMEM = "STARTaGAME";
 const char pgm_HOW_TO_PLAY[] PROGMEM = "HOWaTOaPLAY";
+const char pgm_YOU_LOSE[] PROGMEM = "YOUaLOSE";
+const char pgm_YOU_WIN[] PROGMEM = "YOUaWIN";
 
 // Loads 'len' compressed 'ramfont' tiles into user ram tiles starting at 'user_ram_tile_start' using 'fg_color' and 'bg_color'
 void RamFont_Load(const uint8_t* ramfont, uint8_t user_ram_tile_start, uint8_t len, uint8_t fg_color, uint8_t bg_color)
@@ -972,7 +1000,7 @@ int main()
       LoadLevel(currentLevel);
     }
 
-    // Beat Level 25
+    // Beat Level 30
     if (buttons.pressed == BTN_LEFT) {
       TiltBoardLeft();
       UpdateBoardAfterMove();
@@ -993,6 +1021,41 @@ int main()
       UpdateBoardAfterMove();
       AnimateBoard(BTN_DOWN);
       //RedrawBoard();
+    }
+
+    if (youLose || youWin) {
+      // Load the entire alphabet + extras
+      SetUserRamTilesCount(RAM_TILES_COUNT);
+      RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, 0xFF, 0x00);
+
+      if (youLose)
+        RamFont_Print_Minus_A(12, 23, pgm_YOU_LOSE, sizeof(pgm_YOU_LOSE) - 1);
+      else if (youWin)
+        RamFont_Print_Minus_A(12, 23, pgm_YOU_WIN, sizeof(pgm_YOU_WIN) - 1);
+
+      for (;;) {
+        WaitVsync(1);
+
+        // Read the current state of the player's controller
+        buttons.prev = buttons.held;
+        buttons.held = ReadJoypad(0);
+        buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
+        buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
+
+        if (buttons.pressed) {
+          for (uint8_t i = 0; i < sizeof(pgm_YOU_LOSE) - 1; ++i)
+            SetTile(12 + i, 23, 0);
+          SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
+          if (youLose) {
+            LoadLevel(currentLevel);
+            break;
+          } else if (youWin){
+            currentLevel = (currentLevel + 1) % 40;
+            LoadLevel(currentLevel);
+            break;
+          }
+        }
+      }
     }
   }
 }
