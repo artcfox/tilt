@@ -33,7 +33,7 @@
 #include "data/titlescreen.inc"
 #include "data/tileset.inc"
 //#include "data/spriteset.inc"
-//#include "data/patches.inc"
+#include "data/patches.inc"
 //#include "data/midisong.h"
 
 typedef struct {
@@ -612,6 +612,188 @@ static void SameTimeAnimation()
 
   WaitVsync(1);
 }
+#define NEAREST_SCREEN_PIXEL(p)  (((p) + (1 << (FP_SHIFT - 1))) >> FP_SHIFT)
+
+#define FP_SHIFT                    (2)
+#define WORLD_FPS                   (24)
+#define WORLD_METER                 (10 << FP_SHIFT)
+#define WORLD_GRAVITY               (615)
+#define WORLD_MAX_VELOCITY          (WORLD_METER * 16)
+
+static void UpdatePhysicsLeft()
+{
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    int16_t ddx = 0;
+    ddx -= WORLD_GRAVITY;
+
+    // Integrate the X forces to calculate the new position (x,y) and the new velocity (dx)
+    moveInfo[move].x += (moveInfo[move].dx / WORLD_FPS);
+    moveInfo[move].dx += (ddx / WORLD_FPS);
+    if (moveInfo[move].dx < -WORLD_MAX_VELOCITY)
+      moveInfo[move].dx = -WORLD_MAX_VELOCITY;
+
+    int16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+
+    if (moveInfo[move].x <= (xEnd << FP_SHIFT)) {
+      moveInfo[move].x = xEnd << FP_SHIFT;
+      moveInfo[move].dx = 0;
+      if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd)
+        TriggerFx(FX_THUD, 80, true);
+      moveInfo[move].doneMoving = true;
+      if (moveInfo[move].fellDownHole)
+        MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+    }
+  }
+}
+
+static void UpdatePhysicsUp()
+{
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    int16_t ddy = 0;
+    ddy -= WORLD_GRAVITY;
+
+    // Integrate the Y forces to calculate the new position (x,y) and the new velocity (dy)
+    moveInfo[move].y += (moveInfo[move].dy / WORLD_FPS);
+    moveInfo[move].dy += (ddy / WORLD_FPS);
+    if (moveInfo[move].dy < -WORLD_MAX_VELOCITY)
+      moveInfo[move].dy = -WORLD_MAX_VELOCITY;
+
+    int16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    if (moveInfo[move].y <= (yEnd << FP_SHIFT)) {
+      moveInfo[move].y = yEnd << FP_SHIFT;
+      moveInfo[move].dy = 0;
+      if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd)
+        TriggerFx(FX_THUD, 80, true);
+      moveInfo[move].doneMoving = true;
+      if (moveInfo[move].fellDownHole)
+        MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+    }
+  }
+}
+
+static void UpdatePhysicsRight()
+{
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    int16_t ddx = 0;
+    ddx += WORLD_GRAVITY;
+
+    // Integrate the X forces to calculate the new position (x,y) and the new velocity (dx)
+    moveInfo[move].x += (moveInfo[move].dx / WORLD_FPS);
+    moveInfo[move].dx += (ddx / WORLD_FPS);
+    if (moveInfo[move].dx > WORLD_MAX_VELOCITY)
+      moveInfo[move].dx = WORLD_MAX_VELOCITY;
+
+    int16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+
+    if (moveInfo[move].x >= (xEnd << FP_SHIFT)) {
+      moveInfo[move].x = xEnd << FP_SHIFT;
+      moveInfo[move].dx = 0;
+      if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd)
+        TriggerFx(FX_THUD, 80, true);
+      moveInfo[move].doneMoving = true;
+      if (moveInfo[move].fellDownHole)
+        MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+    }
+  }
+}
+
+static void UpdatePhysicsDown()
+{
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    int16_t ddy = 0;
+    ddy += WORLD_GRAVITY;
+
+    // Integrate the Y forces to calculate the new position (x,y) and the new velocity (dy)
+    moveInfo[move].y += (moveInfo[move].dy / WORLD_FPS);
+    moveInfo[move].dy += (ddy / WORLD_FPS);
+    if (moveInfo[move].dy > WORLD_MAX_VELOCITY)
+      moveInfo[move].dy = WORLD_MAX_VELOCITY;
+
+    int16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+
+    if (moveInfo[move].y >= (yEnd << FP_SHIFT)) {
+      moveInfo[move].y = yEnd << FP_SHIFT;
+      moveInfo[move].dy = 0;
+      if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd)
+        TriggerFx(FX_THUD, 80, true);
+      moveInfo[move].doneMoving = true;
+      if (moveInfo[move].fellDownHole)
+        MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+    }
+  }
+}
+
+static void UpdatePhysics(uint8_t direction)
+{
+  if (direction == BTN_LEFT)
+    UpdatePhysicsLeft();
+  else if (direction == BTN_UP)
+    UpdatePhysicsUp();
+  else if (direction == BTN_RIGHT)
+    UpdatePhysicsRight();
+  else if (direction == BTN_DOWN)
+    UpdatePhysicsDown();
+}
+
+static void GravityAnimation(uint8_t direction)
+{
+  // Initialize the starting positions and velocities with sub-pixel precision
+  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+    if (moveInfo[move].piece == 0)
+      break;
+
+    int16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
+    int16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+
+    moveInfo[move].x = xStart << FP_SHIFT;
+    moveInfo[move].y = yStart << FP_SHIFT;
+    moveInfo[move].dx = moveInfo[move].dy = 0;
+    /*
+    if (direction == BTN_LEFT)
+      moveInfo[move].dx = -WORLD_METER * 1;
+    else if (direction == BTN_UP)
+      moveInfo[move].dy = -WORLD_METER * 1;
+    else if (direction == BTN_RIGHT)
+      moveInfo[move].dx = WORLD_METER * 1;
+    else if (direction == BTN_DOWN)
+      moveInfo[move].dy = WORLD_METER * 1;
+    */
+    moveInfo[move].doneMoving = false;
+  }
+
+  bool allDoneMoving;
+  do {
+    allDoneMoving = true;
+    UpdatePhysics(direction);
+
+    for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
+      if (moveInfo[move].piece == 0)
+        break;
+
+        MoveSprite(move * 4,
+                   NEAREST_SCREEN_PIXEL(moveInfo[move].x),
+                   NEAREST_SCREEN_PIXEL(moveInfo[move].y),
+                   2, 2);
+
+        allDoneMoving &= moveInfo[move].doneMoving;
+    }
+    WaitVsync(1);
+  } while (!allDoneMoving);
+
+}
 
 // This function expects moveInfo to be populated before calling
 // Maybe make it so if you press a direction while it's animating, it skips directly to the end?
@@ -639,7 +821,8 @@ static void AnimateBoard(uint8_t direction)
   }
 
   // Animate them
-  SameTimeAnimation();
+  //SameTimeAnimation();
+  GravityAnimation(direction);
 
   for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
     if (moveInfo[move].piece == 0)
@@ -837,7 +1020,7 @@ int main()
   BUTTON_INFO buttons;
   memset(&buttons, 0, sizeof(BUTTON_INFO));
 
-  //InitMusicPlayer(patches);
+  InitMusicPlayer(patches);
   //StartSong(midisong);
   //StopSong();
 
