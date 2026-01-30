@@ -645,9 +645,9 @@ static void UpdatePhysicsLeft()
       if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd) {
         //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          TriggerFx(FX_THUD, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerFx(FX_HOLE, 128, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -684,16 +684,16 @@ static void UpdatePhysicsUp()
       if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd) {
         //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          TriggerFx(FX_THUD, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerFx(FX_HOLE, 128, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
         /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
           playedYouLoseSound = true;
-          //TriggerFx(FX_HOLE, 128, true);
+          //TriggerFx(FX_HOLE, 80, true);
           TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
           }*/
       }
@@ -724,16 +724,16 @@ static void UpdatePhysicsRight()
       if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd) {
         //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          TriggerFx(FX_THUD, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerFx(FX_HOLE, 128, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
         /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
           playedYouLoseSound = true;
-          //TriggerFx(FX_HOLE, 128, true);
+          //TriggerFx(FX_HOLE, 80, true);
           TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
           }*/
       }
@@ -764,16 +764,16 @@ static void UpdatePhysicsDown()
       if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd) {
         //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          TriggerFx(FX_THUD, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerFx(FX_HOLE, 128, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
         /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
           playedYouLoseSound = true;
-          //TriggerFx(FX_HOLE, 128, true);
+          //TriggerFx(FX_HOLE, 80, true);
           TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
           }*/
       }
@@ -1109,8 +1109,8 @@ int main()
       if (buttons.pressed & BTN_UP) {
         if (selection > 0) {
           selection--;
-          TriggerFx(FX_THUD, 80, true);
-          //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+          //TriggerFx(FX_THUD, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
@@ -1118,8 +1118,8 @@ int main()
       } else if (buttons.pressed & BTN_DOWN) {
         if (selection < 1) {
           selection++;
-          TriggerFx(FX_THUD, 80, true);
-          //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+          //TriggerFx(FX_THUD, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
