@@ -58,6 +58,9 @@ bool youWin;
 bool youLose;
 bool playedYouLoseSound;
 
+// How many pieces hit their end stops this frame (affect whether the sfx plays and its volume)
+uint8_t numSlidersHitEndStops;
+
 // The configuration of the playing board
 uint8_t board[BOARD_HEIGHT][BOARD_WIDTH] = {
   {  0,  0,  0,  0,  0 },
@@ -614,6 +617,7 @@ static void SameTimeAnimation()
 
   WaitVsync(1);
 }
+
 #define NEAREST_SCREEN_PIXEL(p)  (((p) + (1 << (FP_SHIFT - 1))) >> FP_SHIFT)
 
 #define FP_SHIFT                    (2)
@@ -645,9 +649,9 @@ static void UpdatePhysicsLeft()
       if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd) {
         //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
+          ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP); //TriggerFx(FX_HOLE, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -684,9 +688,9 @@ static void UpdatePhysicsUp()
       if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd) {
         //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
+          ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP); //TriggerFx(FX_HOLE, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -724,9 +728,9 @@ static void UpdatePhysicsRight()
       if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd) {
         //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
+          ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP); //TriggerFx(FX_HOLE, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -764,9 +768,9 @@ static void UpdatePhysicsDown()
       if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd) {
         //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
+          ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP); //TriggerFx(FX_HOLE, 80, true);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -822,7 +826,10 @@ static void GravityAnimation(uint8_t direction)
   bool allDoneMoving;
   do {
     allDoneMoving = true;
+    numSlidersHitEndStops = 0;
     UpdatePhysics(direction);
+    if (numSlidersHitEndStops > 0)
+      TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN + 24 * numSlidersHitEndStops);
 
     for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
       if (moveInfo[move].piece == 0)
@@ -835,9 +842,9 @@ static void GravityAnimation(uint8_t direction)
 
         allDoneMoving &= moveInfo[move].doneMoving;
     }
+
     WaitVsync(1);
   } while (!allDoneMoving);
-
 }
 
 // This function expects moveInfo to be populated before calling
@@ -899,26 +906,6 @@ static void AnimateBoard(uint8_t direction)
 
   for (uint8_t i = 0; i < MAX_SPRITES; ++i)
     sprites[i].y = SCREEN_TILES_V * TILE_HEIGHT; // OFF_SCREEN;
-
-  /*
-  bool allDoneMoving = true;
-  do {
-    UpdatePhysics(direction);
-
-    for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-      if (moveInfo[move].piece == 0)
-        break;
-
-        MoveSprite(move * 4,
-                   NEAREST_SCREEN_PIXEL(moveInfo[move].x),
-                   NEAREST_SCREEN_PIXEL(moveInfo[move].y),
-                   2, 2);
-
-      allDoneMoving &= moveInfo[move].doneMoving;
-    }
-    WaitVsync(1);
-  } while (!allDoneMoving);
-  */
 }
 
 const uint8_t rf_title[] PROGMEM = {

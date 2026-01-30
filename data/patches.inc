@@ -95,8 +95,8 @@ const char hole[] PROGMEM = {
 #define SFX_SPEED_ZAP         23
 #define SFX_SPEED_SWITCH      23
 
-#define SFX_VOL_MOUSE_DOWN  255
-#define SFX_VOL_MOUSE_UP    255
+#define SFX_VOL_MOUSE_DOWN  127
+#define SFX_VOL_MOUSE_UP    127
 #define SFX_VOL_WIN         64
 #define SFX_VOL_ROTATE      128
 #define SFX_VOL_ZAP         224
