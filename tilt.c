@@ -56,6 +56,7 @@ typedef struct {
 uint8_t currentLevel;
 bool youWin;
 bool youLose;
+bool playedYouLoseSound;
 
 // The configuration of the playing board
 uint8_t board[BOARD_HEIGHT][BOARD_WIDTH] = {
@@ -220,6 +221,7 @@ static void LoadLevel(const uint8_t level)
 {
   youWin = false;
   youLose = false;
+  playedYouLoseSound = false;
 
   // Draw LEVEL ##
   DrawMap((SCREEN_TILES_H - 8) / 2, ENTIRE_GAMEBOARD_TOP - 3, map_level);
@@ -640,11 +642,21 @@ static void UpdatePhysicsLeft()
     if (moveInfo[move].x <= (xEnd << FP_SHIFT)) {
       moveInfo[move].x = xEnd << FP_SHIFT;
       moveInfo[move].dx = 0;
-      if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd)
-        TriggerFx(FX_THUD, 80, true);
+      if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd) {
+        //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
+        if (!moveInfo[move].fellDownHole)
+          TriggerFx(FX_THUD, 80, true);
+        else
+          TriggerFx(FX_HOLE, 128, true);
+      }
       moveInfo[move].doneMoving = true;
-      if (moveInfo[move].fellDownHole)
+      if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+        /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
+          playedYouLoseSound = true;
+          TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
+          }*/
+      }
     }
   }
 }
@@ -669,11 +681,22 @@ static void UpdatePhysicsUp()
     if (moveInfo[move].y <= (yEnd << FP_SHIFT)) {
       moveInfo[move].y = yEnd << FP_SHIFT;
       moveInfo[move].dy = 0;
-      if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd)
-        TriggerFx(FX_THUD, 80, true);
+      if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd) {
+        //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
+        if (!moveInfo[move].fellDownHole)
+          TriggerFx(FX_THUD, 80, true);
+        else
+          TriggerFx(FX_HOLE, 128, true);
+      }
       moveInfo[move].doneMoving = true;
-      if (moveInfo[move].fellDownHole)
+      if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+        /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
+          playedYouLoseSound = true;
+          //TriggerFx(FX_HOLE, 128, true);
+          TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
+          }*/
+      }
     }
   }
 }
@@ -698,11 +721,22 @@ static void UpdatePhysicsRight()
     if (moveInfo[move].x >= (xEnd << FP_SHIFT)) {
       moveInfo[move].x = xEnd << FP_SHIFT;
       moveInfo[move].dx = 0;
-      if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd)
-        TriggerFx(FX_THUD, 80, true);
+      if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd) {
+        //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
+        if (!moveInfo[move].fellDownHole)
+          TriggerFx(FX_THUD, 80, true);
+        else
+          TriggerFx(FX_HOLE, 128, true);
+      }
       moveInfo[move].doneMoving = true;
-      if (moveInfo[move].fellDownHole)
+      if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+        /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
+          playedYouLoseSound = true;
+          //TriggerFx(FX_HOLE, 128, true);
+          TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
+          }*/
+      }
     }
   }
 }
@@ -727,11 +761,22 @@ static void UpdatePhysicsDown()
     if (moveInfo[move].y >= (yEnd << FP_SHIFT)) {
       moveInfo[move].y = yEnd << FP_SHIFT;
       moveInfo[move].dy = 0;
-      if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd)
-        TriggerFx(FX_THUD, 80, true);
+      if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd) {
+        //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
+        if (!moveInfo[move].fellDownHole)
+          TriggerFx(FX_THUD, 80, true);
+        else
+          TriggerFx(FX_HOLE, 128, true);
+      }
       moveInfo[move].doneMoving = true;
-      if (moveInfo[move].fellDownHole)
+      if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+        /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
+          playedYouLoseSound = true;
+          //TriggerFx(FX_HOLE, 128, true);
+          TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
+          }*/
+      }
     }
   }
 }
@@ -1064,6 +1109,7 @@ int main()
       if (buttons.pressed & BTN_UP) {
         if (selection > 0) {
           selection--;
+          TriggerFx(FX_THUD, 80, true);
           //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
@@ -1072,6 +1118,7 @@ int main()
       } else if (buttons.pressed & BTN_DOWN) {
         if (selection < 1) {
           selection++;
+          TriggerFx(FX_THUD, 80, true);
           //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
@@ -1211,10 +1258,12 @@ int main()
       SetUserRamTilesCount(RAM_TILES_COUNT);
       RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, 0xFF, 0x00);
 
-      if (youLose)
+      if (youLose) {
         RamFont_Print_Minus_A(12, 23, pgm_YOU_LOSE, sizeof(pgm_YOU_LOSE) - 1);
-      else if (youWin)
+      } else if (youWin) {
+        //TriggerNote(SFX_CHANNEL, SFX_WIN, SFX_SPEED_WIN, SFX_VOL_WIN);
         RamFont_Print_Minus_A(12, 23, pgm_YOU_WIN, sizeof(pgm_YOU_WIN) - 1);
+      }
 
       for (;;) {
         WaitVsync(1);

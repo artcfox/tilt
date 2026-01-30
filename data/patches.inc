@@ -1,106 +1,39 @@
-// FX: Jump
-const char jump[] PROGMEM = {
-0,PC_WAVE,4,
-0,PC_ENV_SPEED,-88,
-0,PC_PITCH,59,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_CUT,0,
-0,PATCH_END
-};
+#include "PCM_mouse_down.inc"
+#include "PCM_mouse_up.inc"
+//#include "PCM_win.inc"
+#include "PCM_fanfare.inc"
+#include "PCM_rotate.inc"
+#include "PCM_zap.inc"
+#include "PCM_switch.inc"
 
-// FX: Clop
-const char clop[] PROGMEM = {
-0,PC_ENV_SPEED,-80,
-0,PC_NOISE_PARAMS,2,
-1,PC_ENV_VOL,0,
-3,PC_ENV_VOL,0x3f,
-0,PC_NOISE_PARAMS,3,
-0,PATCH_END
-};
+//const char a85e[] PROGMEM = {
+//0,PC_WAVE,0,
+//0,PC_ENV_VOL,24,
+//0,PC_ENV_SPEED,1,
+//16,PC_ENV_SPEED,-1,
+//0,PATCH_END
+//};
+//
+//const char a899[] PROGMEM = {
+//0,PC_WAVE,0,
+//0,PC_ENV_VOL,0,
+//0,PC_ENV_SPEED,2,
+//12,PC_ENV_SPEED,-2,
+//24,PATCH_END
+//};
 
-// FX: Fart
-const char fart[] PROGMEM = {
-0,PC_ENV_VOL,127,
-0,PC_WAVE,1,
-0,PC_ENV_SPEED,-1,
-0,PC_PITCH,24,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_UP,1,
-1,PC_NOTE_CUT,0,
-0,PATCH_END
-};
-
-// FX: Gulp
-const char gulp[] PROGMEM = {
+const char patch04[] PROGMEM = {
+0,PC_TREMOLO_LEVEL,70,
+0,PC_TREMOLO_RATE,80,
 0,PC_WAVE,0,
-0,PC_ENV_SPEED,-16,
-0,PC_ENV_VOL,96,
-1,PC_PITCH,68,
-1,PC_NOTE_UP,2,
-1,PC_NOTE_UP,2,
-1,PC_NOTE_CUT,0,
+0,PC_ENV_VOL,48,  // was 48
+0,PC_ENV_SPEED,4, // was 4
+1,PC_NOTE_HOLD,0,
+0,PC_ENV_SPEED,-8, // was -8
+8,PC_NOTE_CUT,0,
 0,PATCH_END
 };
-
-// FX: Death
-const char death[] PROGMEM = {
-0,PC_WAVE,1,
-0,PC_ENV_SPEED,-16,
-1,PC_PITCH,54,
-1,PC_NOTE_DOWN,2,
-1,PC_NOTE_DOWN,3,
-1,PC_NOTE_CUT,0,
-0,PATCH_END
-};
-
-// FX: Falling
-const char falling[] PROGMEM = {
-0,PC_WAVE,2,
-0,PC_ENV_SPEED,-16,
-0,PC_SLIDE_SPEED,12,
-0,PC_SLIDE,-24,
-8,PC_ENV_SPEED,-32,
-0,PATCH_END
-};
-
-// FX: Echo Alert
-const char alert[] PROGMEM = {
-0,PC_WAVE,1,
-0,PC_PITCH,90,
-0,PC_ENV_SPEED,-32,
-0,PC_NOTE_DOWN,26,
-1,PC_NOTE_UP,3,
-1,PC_NOTE_UP,3,
-1,PC_NOTE_UP,3,
-1,PC_NOTE_UP,4,
-1,PC_NOTE_UP,4,
-1,PC_NOTE_DOWN,16,
-1,PC_NOTE_CUT,0,
-0,PATCH_END
-};
-
-// FX: Shake
-const char shake[] PROGMEM = {
-0,PC_WAVE,0,
-0,PC_PITCH,80,
-0,PC_ENV_SPEED,-64,
-0,PC_NOTE_DOWN,26,
-1,PC_NOTE_CUT,0,
-0,PATCH_END
-};
-
+#if 0
 // FX: Thud
 const char thud[] PROGMEM = {
 0,PC_WAVE,0,
@@ -110,39 +43,80 @@ const char thud[] PROGMEM = {
 1,PC_NOTE_CUT,0,
 0,PATCH_END
 };
+#endif
 
-// MIDI: Instrument
-const char flute[] PROGMEM = {
-0,PC_WAVE,8,
-0,PC_ENV_VOL,10,
-1,PC_ENV_SPEED,12,
-5,PC_ENV_SPEED,-9,
+// FX: Thud v2
+const char thud[] PROGMEM = {
+0,PC_WAVE,0,
+0,PC_PITCH,82,
+0,PC_ENV_SPEED,-64,
+0,PC_NOTE_DOWN,30,
+0,PC_ENV_SPEED,-128,
 0,PATCH_END
 };
 
-#define FX_JUMP      3
-#define FX_CLOP      4
-#define FX_MENU      4
-#define FX_FART      5
-#define FX_GULP      6
-#define FX_DEATH     7
-#define FX_FALLING   8
-#define FX_ALERT     9
-#define FX_SHAKE     10
-#define FX_THUD      11
+#if 0
+// FX: Hole
+const char hole[] PROGMEM = {
+0,PC_WAVE,0,
+0,PC_PITCH,90,
+0,PC_ENV_SPEED,-64,
+0,PC_NOTE_DOWN,29,
+0,PC_ENV_SPEED,-128,
+0,PATCH_END
+};
+#endif
 
+// FX: Hole v2
+const char hole[] PROGMEM = {
+0,PC_WAVE,0,
+0,PC_PITCH,86,
+0,PC_ENV_SPEED,-64,
+0,PC_NOTE_DOWN,25,
+2,PC_NOTE_CUT,0,
+0,PATCH_END
+};
+
+#define SFX_CHANNEL     4
+
+#define SFX_MOUSE_DOWN  3
+#define SFX_MOUSE_UP    4
+#define SFX_WIN         5
+#define SFX_ROTATE      6
+#define SFX_ZAP         7
+#define SFX_SWITCH      8
+#define FX_THUD         9
+#define FX_HOLE         10
+
+#define SFX_SPEED_MOUSE_DOWN  23
+#define SFX_SPEED_MOUSE_UP    23
+#define SFX_SPEED_WIN         23
+#define SFX_SPEED_ROTATE      23
+#define SFX_SPEED_ZAP         23
+#define SFX_SPEED_SWITCH      23
+
+#define SFX_VOL_MOUSE_DOWN  255
+#define SFX_VOL_MOUSE_UP    255
+#define SFX_VOL_WIN         64
+#define SFX_VOL_ROTATE      128
+#define SFX_VOL_ZAP         224
+#define SFX_VOL_SWITCH      192
+
+extern const char waves[];
 const struct PatchStruct patches[] PROGMEM = {
-{0,NULL,flute,0,0},
-{0,NULL,flute,0,0},
-{0,NULL,flute,0,0},
-
-{0,NULL,jump,0,0},
-{1,NULL,clop,0,0},
-{0,NULL,fart,0,0},
-{0,NULL,gulp,0,0},
-{0,NULL,death,0,0},
-{0,NULL,falling,0,0},
-{0,NULL,alert,0,0},
-{0,NULL,shake,0,0},
+//{0,NULL,a85e,0,0},
+//{0,NULL,a899,0,0},
+//{0,NULL,a899,0,0},
+{0,NULL,patch04,0,0},
+{0,NULL,patch04,0,0},
+{0,NULL,patch04,0,0},
+// For the below to work, the last 2 bytes of the PCM_Data arrays need to be 0
+{2,PCM_mouse_down,NULL,sizeof(PCM_mouse_down)-2,sizeof(PCM_mouse_down)-1},
+{2,PCM_mouse_up,NULL,sizeof(PCM_mouse_up)-2,sizeof(PCM_mouse_up)-1},
+{2,PCM_fanfare,NULL,sizeof(PCM_fanfare)-2,sizeof(PCM_fanfare)-1},
+{2,PCM_rotate,NULL,sizeof(PCM_rotate)-2,sizeof(PCM_rotate)-1},
+{2,PCM_zap,NULL,sizeof(PCM_zap)-2,sizeof(PCM_zap)-1},
+{2,PCM_switch,NULL,sizeof(PCM_switch)-2,sizeof(PCM_switch)-1},
 {0,NULL,thud,0,0},
+{0,NULL,hole,0,0},
 };
