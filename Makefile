@@ -95,7 +95,7 @@ INCLUDES = -I"$(KERNEL_DIR)"
 DEPS  = Makefile
 
 ## Build
-all: ./data/titlescreen.inc ./data/tileset.inc ./data/spriteset.inc ./data/midisong.inc ./data/PCM_slider_stop.inc ./data/PCM_slider_hole.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze
+all: ./data/titlescreen.inc ./data/tileset.inc ./data/midisong.inc ./data/PCM_slider_stop.inc ./data/PCM_slider_hole.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze
 
 ## Compile Kernel files (prefix with .)
 .uzeboxVideoEngineCore.o: $(KERNEL_DIR)/uzeboxVideoEngineCore.s $(DEPS)
@@ -125,9 +125,6 @@ all: ./data/titlescreen.inc ./data/tileset.inc ./data/spriteset.inc ./data/midis
 
 ./data/tileset.inc: ./data/tileset.png ./data/tileset.xml
 	$(UZEBIN_DIR)/gconvert ./data/tileset.xml
-
-./data/spriteset.inc: ./data/spriteset.png ./data/spriteset.xml
-	$(UZEBIN_DIR)/gconvert ./data/spriteset.xml
 
 ./data/midisong.h: ./data/midisong.mid $(DEPS)
 	$(UZEBIN_DIR)/midiconv -f 8 ./data/midisong.mid ./data/midisong.h
@@ -162,7 +159,7 @@ $(TARGET): $(OBJECTS) $(DEPS)
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf ./data/titlescreen.inc ./data/tileset.inc ./data/spriteset.inc ./data/midisong.h ./data/midisong.inc $(OBJECTS) $(TARGET) $(GAME).eep $(GAME).hex $(GAME).lss $(GAME).map $(GAME).uze $(OBJECTS:.o=.o.d)
+	-rm -rf ./data/titlescreen.inc ./data/tileset.inc ./data/midisong.h ./data/midisong.inc $(OBJECTS) $(TARGET) $(GAME).eep $(GAME).hex $(GAME).lss $(GAME).map $(GAME).uze $(OBJECTS:.o=.o.d)
 
 ## Proper automatic dependency tracking requires the *.o and *.o.d files to be
 ## generated in the top level directory, so we hide the *.o and *.o.d files

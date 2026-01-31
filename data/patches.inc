@@ -56,47 +56,25 @@ const char hole[] PROGMEM = {
 0,PATCH_END
 };
 
-#define SFX_CHANNEL     4
+#define SFX_CHANNEL            4
 
-#define SFX_MOUSE_DOWN  3
-#define SFX_MOUSE_UP    4
-#define SFX_WIN         5
-#define SFX_ROTATE      6
-#define SFX_ZAP         7
-#define SFX_SWITCH      8
-#define FX_THUD         5
-#define FX_HOLE         10
+#define SFX_SLIDER_STOP        3
+#define SFX_SLIDER_HOLE        4
+#define FX_THUD                5
 
-#define SFX_SPEED_MOUSE_DOWN  32
-#define SFX_SPEED_MOUSE_UP    32
-#define SFX_SPEED_WIN         23
-#define SFX_SPEED_ROTATE      23
-#define SFX_SPEED_ZAP         23
-#define SFX_SPEED_SWITCH      23
+#define SFX_SPEED_SLIDER_STOP  32
+#define SFX_SPEED_SLIDER_HOLE  32
 
-#define SFX_VOL_MOUSE_DOWN  127
-#define SFX_VOL_MOUSE_UP    127
-#define SFX_VOL_WIN         64
-#define SFX_VOL_ROTATE      128
-#define SFX_VOL_ZAP         224
-#define SFX_VOL_SWITCH      192
+#define SFX_VOL_SLIDER_STOP    127
+#define SFX_VOL_SLIDER_HOLE    127
 
 extern const char waves[];
 const struct PatchStruct patches[] PROGMEM = {
-//{0,NULL,a85e,0,0},
-//{0,NULL,a899,0,0},
-//{0,NULL,a899,0,0},
 {0,NULL,patch04,0,0},
 {0,NULL,patch04,0,0},
 {0,NULL,patch04,0,0},
 // For the below to work, the last 2 bytes of the PCM_Data arrays need to be 0
 {2,__data_PCM_slider_stop_raw,NULL,sizeof(__data_PCM_slider_stop_raw)-2,sizeof(__data_PCM_slider_stop_raw)-1},
 {2,__data_PCM_slider_hole_raw,NULL,sizeof(__data_PCM_slider_hole_raw)-2,sizeof(__data_PCM_slider_hole_raw)-1},
-//{2,PCM_mouse_up,NULL,sizeof(PCM_mouse_up)-2,sizeof(PCM_mouse_up)-1},
-//{2,PCM_fanfare,NULL,sizeof(PCM_fanfare)-2,sizeof(PCM_fanfare)-1},
-//{2,PCM_rotate,NULL,sizeof(PCM_rotate)-2,sizeof(PCM_rotate)-1},
-//{2,PCM_zap,NULL,sizeof(PCM_zap)-2,sizeof(PCM_zap)-1},
-//{2,PCM_switch,NULL,sizeof(PCM_switch)-2,sizeof(PCM_switch)-1},
 {0,NULL,thud,0,0},
-//{0,NULL,hole,0,0},
 };

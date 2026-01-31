@@ -32,7 +32,6 @@
 
 #include "data/titlescreen.inc"
 #include "data/tileset.inc"
-//#include "data/spriteset.inc"
 #include "data/patches.inc"
 //#include "data/midisong.h"
 
@@ -268,7 +267,6 @@ struct MOVE_INFO {
 
   // Animation stuff
   bool doneMoving;
-  // uint8_t tag; // not needed, use array index * 4
 
   // Should be able to reduce this to just position and velocity
   int16_t x;
@@ -487,22 +485,7 @@ static void UpdateBoardAfterMove()
     youWin = true;
 }
 
-/*
-static void RedrawBoard()
-{
-  DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP, map_board);
-
-  for (uint8_t y = 0; y < BOARD_HEIGHT; ++y)
-    for (uint8_t x = 0; x < BOARD_WIDTH; ++x) {
-      uint8_t piece = board[y][x];
-      if (piece == S || piece == G || piece == B)
-        DrawMap(ENTIRE_GAMEBOARD_LEFT + 2 + GAMEPIECE_WIDTH * x,
-                ENTIRE_GAMEBOARD_TOP + 2 + GAMEPIECE_HEIGHT * y,
-                MapPieceToTileMapForBoardPosition(piece, x, y));
-    }
-}
-*/
-
+#if 0
 static void SameTimeAnimation()
 {
   WaitVsync(1);
@@ -618,6 +601,7 @@ static void SameTimeAnimation()
 
   WaitVsync(1);
 }
+#endif
 
 #define NEAREST_SCREEN_PIXEL(p)  (((p) + (1 << (FP_SHIFT - 1))) >> FP_SHIFT)
 
@@ -648,11 +632,10 @@ static void UpdatePhysicsLeft()
       moveInfo[move].x = xEnd << FP_SHIFT;
       moveInfo[move].dx = 0;
       if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd) {
-        //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
+          ++numSlidersHitEndStops;
         else
-          playFellDownHoleSound = true; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
+          playFellDownHoleSound = true;
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -687,18 +670,16 @@ static void UpdatePhysicsUp()
       moveInfo[move].y = yEnd << FP_SHIFT;
       moveInfo[move].dy = 0;
       if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd) {
-        //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
+          ++numSlidersHitEndStops;
         else
-          playFellDownHoleSound = true; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
+          playFellDownHoleSound = true;
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
         /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
           playedYouLoseSound = true;
-          //TriggerFx(FX_HOLE, 80, true);
           TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
           }*/
       }
@@ -727,18 +708,16 @@ static void UpdatePhysicsRight()
       moveInfo[move].x = xEnd << FP_SHIFT;
       moveInfo[move].dx = 0;
       if (!moveInfo[move].doneMoving && moveInfo[move].xStart != moveInfo[move].xEnd) {
-        //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
+          ++numSlidersHitEndStops;
         else
-          playFellDownHoleSound = true; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
+          playFellDownHoleSound = true;
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
         /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
           playedYouLoseSound = true;
-          //TriggerFx(FX_HOLE, 80, true);
           TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
           }*/
       }
@@ -767,18 +746,16 @@ static void UpdatePhysicsDown()
       moveInfo[move].y = yEnd << FP_SHIFT;
       moveInfo[move].dy = 0;
       if (!moveInfo[move].doneMoving && moveInfo[move].yStart != moveInfo[move].yEnd) {
-        //TriggerNote(SFX_CHANNEL, SFX_SWITCH, SFX_SPEED_SWITCH, SFX_VOL_SWITCH);
         if (!moveInfo[move].fellDownHole)
-          ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
+          ++numSlidersHitEndStops;
         else
-          playFellDownHoleSound = true; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
+          playFellDownHoleSound = true;
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
         /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
           playedYouLoseSound = true;
-          //TriggerFx(FX_HOLE, 80, true);
           TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
           }*/
       }
@@ -811,6 +788,8 @@ static void GravityAnimation(uint8_t direction)
     moveInfo[move].x = xStart << FP_SHIFT;
     moveInfo[move].y = yStart << FP_SHIFT;
     moveInfo[move].dx = moveInfo[move].dy = 0;
+
+    // The following code block would give each piece an initial velocity
     /*
     if (direction == BTN_LEFT)
       moveInfo[move].dx = -WORLD_METER * 1;
@@ -832,11 +811,11 @@ static void GravityAnimation(uint8_t direction)
 
     UpdatePhysics(direction);
     if (numSlidersHitEndStops > 0)
-      TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN + 24 * numSlidersHitEndStops);
+      TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP + 24 * numSlidersHitEndStops);
       //TriggerFx(FX_THUD, 80, true);
 
     if (playFellDownHoleSound)
-      TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5);
+      TriggerNote(SFX_CHANNEL, SFX_SLIDER_HOLE, SFX_SPEED_SLIDER_HOLE, SFX_VOL_SLIDER_HOLE + 24 * 5);
 
 
     for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
@@ -859,7 +838,6 @@ static void GravityAnimation(uint8_t direction)
 // Maybe make it so if you press a direction while it's animating, it skips directly to the end?
 static void AnimateBoard(uint8_t direction)
 {
-  (void)direction;
   // Hide all sprites
   for (uint8_t i = 0; i < MAX_SPRITES; ++i)
     sprites[i].y = SCREEN_TILES_V * TILE_HEIGHT; // OFF_SCREEN;
@@ -1104,8 +1082,7 @@ int main()
       if (buttons.pressed & BTN_UP) {
         if (selection > 0) {
           selection--;
-          //TriggerFx(FX_THUD, 80, true);
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+          TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
@@ -1113,9 +1090,7 @@ int main()
       } else if (buttons.pressed & BTN_DOWN) {
         if (selection < 1) {
           selection++;
-          //TriggerFx(FX_THUD, 80, true);
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
-          //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+          TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
@@ -1125,7 +1100,7 @@ int main()
       WaitVsync(1);
     }
 
-    //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+    //TriggerNote(SFX_CHANNEL, SFX_SLIDER_HOLE, SFX_SPEED_SLIDER_HOLE, SFX_VOL_SLIDER_HOLE);
 
     if (selection == 0)
       goto start_game;
@@ -1196,10 +1171,12 @@ int main()
  start_game:
   ClearVram();
   SetTileTable(tileset);
-  //SetSpritesTileBank(0, mysprites);
   SetSpritesTileBank(0, tileset);
   SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
 
+  // Idea: Maybe create a looping MIDI file that is just the noise channel
+  //       so it can be started when pieces begin to slide, and be stopped
+  //       when all the pieces stop sliding?
   //ResumeSong();
 
   currentLevel = 1;
@@ -1214,6 +1191,7 @@ int main()
     buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
     buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
+    // Crude level select for now
     if (buttons.pressed == BTN_SR) {
       currentLevel++;
       if (currentLevel > 40)
@@ -1226,27 +1204,23 @@ int main()
       LoadLevel(currentLevel);
     }
 
-    // Beat Level 30
+    // Beat Level 31
     if (buttons.pressed == BTN_LEFT) {
       TiltBoardLeft();
       UpdateBoardAfterMove();
       AnimateBoard(BTN_LEFT);
-      //RedrawBoard();
     } else if (buttons.pressed == BTN_UP) {
       TiltBoardUp();
       UpdateBoardAfterMove();
       AnimateBoard(BTN_UP);
-      //RedrawBoard();
     } else if (buttons.pressed == BTN_RIGHT) {
       TiltBoardRight();
       UpdateBoardAfterMove();
       AnimateBoard(BTN_RIGHT);
-      //RedrawBoard();
     } else if (buttons.pressed == BTN_DOWN) {
       TiltBoardDown();
       UpdateBoardAfterMove();
       AnimateBoard(BTN_DOWN);
-      //RedrawBoard();
     }
 
     if (youLose || youWin) {
@@ -1271,9 +1245,12 @@ int main()
         buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
         if (buttons.pressed) {
+          // Erase Win/Lose message
           for (uint8_t i = 0; i < sizeof(pgm_YOU_LOSE) - 1; ++i)
             SetTile(12 + i, 23, 0);
+
           SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
+
           if (youLose) {
             LoadLevel(currentLevel);
             break;
