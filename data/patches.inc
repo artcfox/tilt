@@ -1,5 +1,7 @@
 #include "PCM_slider_stop.inc"
 #include "PCM_slider_hole.inc"
+#include "PCM_mouse_down.inc"
+#include "PCM_mouse_up.inc"
 
 const char patch04[] PROGMEM = {
 0,PC_TREMOLO_LEVEL,70,
@@ -60,13 +62,19 @@ const char hole[] PROGMEM = {
 
 #define SFX_SLIDER_STOP        3
 #define SFX_SLIDER_HOLE        4
-#define FX_THUD                5
+#define SFX_MOUSE_DOWN         5
+#define SFX_MOUSE_UP           6
+#define FX_THUD                7
 
 #define SFX_SPEED_SLIDER_STOP  32
 #define SFX_SPEED_SLIDER_HOLE  32
+#define SFX_SPEED_MOUSE_DOWN   32
+#define SFX_SPEED_MOUSE_UP     32
 
 #define SFX_VOL_SLIDER_STOP    127
 #define SFX_VOL_SLIDER_HOLE    127
+#define SFX_VOL_MOUSE_DOWN     255
+#define SFX_VOL_MOUSE_UP       255
 
 extern const char waves[];
 const struct PatchStruct patches[] PROGMEM = {
@@ -76,5 +84,7 @@ const struct PatchStruct patches[] PROGMEM = {
 // For the below to work, the last 2 bytes of the PCM_Data arrays need to be 0
 {2,__data_PCM_slider_stop_raw,NULL,sizeof(__data_PCM_slider_stop_raw)-2,sizeof(__data_PCM_slider_stop_raw)-1},
 {2,__data_PCM_slider_hole_raw,NULL,sizeof(__data_PCM_slider_hole_raw)-2,sizeof(__data_PCM_slider_hole_raw)-1},
+{2,PCM_mouse_down,NULL,sizeof(PCM_mouse_down)-2,sizeof(PCM_mouse_down)-1},
+{2,PCM_mouse_up,NULL,sizeof(PCM_mouse_up)-2,sizeof(PCM_mouse_up)-1},
 {0,NULL,thud,0,0},
 };

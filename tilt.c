@@ -1030,6 +1030,150 @@ void RamFont_Print_Minus_A(uint8_t x, uint8_t y, const char* message, uint8_t le
   }
 }
 
+// Compressed ram font data for other characters: *RESTCIUMNOK(LOCK_ICON)
+// run ramfont/main ramfont-popup.png to generate
+const uint8_t rf_popup[] PROGMEM = {
+  0x00, 0x00, 0x18, 0x3c, 0x3c, 0x18, 0x00, 0x00,
+  0x3e, 0x63, 0x61, 0x3f, 0x0d, 0x79, 0x71, 0x00,
+  0x3e, 0x63, 0x01, 0x3f, 0x01, 0x7f, 0x7e, 0x00,
+  0x1e, 0x31, 0x01, 0x3e, 0x60, 0x73, 0x3e, 0x00,
+  0x3e, 0x7f, 0x09, 0x08, 0x0c, 0x0c, 0x0c, 0x00,
+  0x3e, 0x63, 0x01, 0x01, 0x63, 0x7f, 0x3e, 0x00,
+  0x08, 0x18, 0x18, 0x18, 0x1c, 0x1c, 0x1c, 0x00,
+  0x20, 0x61, 0x61, 0x61, 0x73, 0x3f, 0x1e, 0x00,
+  0x31, 0x7b, 0x6f, 0x65, 0x61, 0x63, 0x23, 0x00,
+  0x23, 0x67, 0x6d, 0x79, 0x71, 0x63, 0x23, 0x00,
+  0x38, 0x66, 0x61, 0x61, 0x71, 0x7f, 0x3e, 0x00,
+  0x32, 0x1b, 0x0b, 0x1f, 0x3b, 0x73, 0x73, 0x00,
+  0x18, 0x24, 0x24, 0x7e, 0x56, 0x6a, 0x7e, 0x00,
+};
+
+// Compressed ram font data for popup border
+// run ramfont/main ramfont-popup-border.png to generate
+const uint8_t rf_popup_border[] PROGMEM = {
+  0xff, 0xff, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+  0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xff, 0x7f, 0x60, 0x60, 0x60, 0x60, 0x60, 0x60,
+  0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+  0x60, 0x60, 0x60, 0x60, 0x60, 0x60, 0x60, 0x60,
+  0x03, 0x03, 0x03, 0x03, 0x03, 0xff, 0xff, 0x01,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00,
+  0x60, 0x60, 0x60, 0x60, 0x60, 0x7f, 0x7f, 0x00,
+};
+
+// Compressed ram font data for digits 0-9
+// run ramfont/main ramfont-digits.png to generate
+const uint8_t rf_digits[] PROGMEM = {
+  0x7c, 0xc2, 0xc2, 0xc2, 0xe2, 0xfe, 0x7c, 0x00,
+  0x10, 0x38, 0x38, 0x38, 0x38, 0x38, 0x10, 0x00,
+  0x7c, 0xe6, 0xc4, 0x60, 0x18, 0xfc, 0x7e, 0x00,
+  0x7c, 0x60, 0x30, 0xfc, 0xc0, 0xfe, 0x7c, 0x00,
+  0x60, 0x70, 0x68, 0x64, 0xfe, 0xfc, 0x60, 0x00,
+  0x7e, 0x06, 0x7c, 0xc0, 0xc0, 0xfe, 0x7c, 0x00,
+  0x3c, 0x62, 0x02, 0x7e, 0xc2, 0xfe, 0x7c, 0x00,
+  0x7c, 0xc2, 0xc0, 0x70, 0x18, 0x1c, 0x1c, 0x00,
+  0x7c, 0x66, 0x3c, 0x7c, 0xc6, 0xfe, 0x7c, 0x00,
+  0x7c, 0xe2, 0xc2, 0xfc, 0xc0, 0xc2, 0x7c, 0x00,
+};
+
+void RamFont_Print(uint8_t x, uint8_t y, const uint8_t* message, uint8_t len)
+{
+  for (uint8_t i = 0; i < len; ++i) {
+    int8_t tileno = (int8_t)pgm_read_byte(&message[i]);
+    if (tileno >= 0)
+      SetRamTile(x + i, y, tileno);
+  }
+}
+
+uint8_t RamFont_GetLevelColor(uint8_t level)
+{
+  if ((level >= 1) && (level <= 10))
+    return 0x20;  // TILE_GREEN
+  else if ((level >= 11) && (level <= 20))
+    return 0x2F; // TILE_YELLOW
+  else if ((level >= 21) && (level <= 30))
+    return 0xD0; // TILE_BLUE
+  else if ((level >= 31) && (level <= 40))
+    return 0x0E; // TILE_RED
+  return 0xFF;
+}
+
+void RamFont_Load2Digits(const uint8_t* ramfont, uint8_t ramfont_index, uint8_t number, uint8_t fg_color, uint8_t bg_color)
+{
+  uint8_t digits[2] = {0};
+  BCD_addConstant(digits, 2, number);
+
+  for (uint8_t tile = 0; tile < 2; ++tile) {
+    uint8_t* ramTile = GetUserRamTile(tile + ramfont_index);
+    for (uint8_t row = 0; row < 8; ++row) {
+      uint8_t rowstart = row * 8;
+      uint8_t data = (uint8_t)pgm_read_byte(&ramfont[digits[tile] * 8 + row]);
+      uint8_t bit = 0;
+      for (uint8_t bitmask = 1; bitmask != 0; bitmask <<= 1) {
+        if (data & bitmask)
+          ramTile[rowstart + bit] = fg_color;
+        else
+          ramTile[rowstart + bit] = bg_color;
+        ++bit;
+      }
+    }
+  }
+}
+
+void TileToRam(uint16_t toff, uint16_t roff, uint16_t len, const char* tiles, uint8_t* ramTile)
+{   // copy len number of tiles from tiles to ram tiles, use Abs below to give an absolute offset.
+   toff = toff << 6; // multiply by 64 to convert from ram tile index to actual address for pixel 0
+   roff = roff << 6;
+   len  = len << 6;
+   while (len--)
+     ramTile[roff++] = pgm_read_byte(tiles + toff++);
+}
+
+// Defines for the ram fonts used in the popup menu
+#define RF_ASTERISK (GAME_USER_RAM_TILES_COUNT)
+#define RF_R (GAME_USER_RAM_TILES_COUNT + 1)
+#define RF_E (GAME_USER_RAM_TILES_COUNT + 2)
+#define RF_S (GAME_USER_RAM_TILES_COUNT + 3)
+#define RF_T (GAME_USER_RAM_TILES_COUNT + 4)
+#define RF_C (GAME_USER_RAM_TILES_COUNT + 5)
+#define RF_I (GAME_USER_RAM_TILES_COUNT + 6)
+#define RF_U (GAME_USER_RAM_TILES_COUNT + 7)
+#define RF_M (GAME_USER_RAM_TILES_COUNT + 8)
+#define RF_N (GAME_USER_RAM_TILES_COUNT + 9)
+#define RF_O (GAME_USER_RAM_TILES_COUNT + 10)
+#define RF_K (GAME_USER_RAM_TILES_COUNT + 11)
+
+#define RF_UNSOLVED (GAME_USER_RAM_TILES_COUNT + 12)
+
+#define RF_B_TL (GAME_USER_RAM_TILES_COUNT + 13)
+#define RF_B_T (GAME_USER_RAM_TILES_COUNT + 14)
+#define RF_B_TR (GAME_USER_RAM_TILES_COUNT + 15)
+#define RF_B_L (GAME_USER_RAM_TILES_COUNT + 16)
+#define RF_B_R (GAME_USER_RAM_TILES_COUNT + 17)
+#define RF_B_BL (GAME_USER_RAM_TILES_COUNT + 18)
+#define RF_B_B (GAME_USER_RAM_TILES_COUNT + 19)
+#define RF_B_BR (GAME_USER_RAM_TILES_COUNT + 20)
+
+#define RF_OnesPlace (GAME_USER_RAM_TILES_COUNT + 21)
+#define RF_TensPlace (GAME_USER_RAM_TILES_COUNT + 22)
+
+/*
+#define RF_SLIDER_ON_L (GAME_USER_RAM_TILES_COUNT + 23)
+#define RF_SLIDER_ON_R (GAME_USER_RAM_TILES_COUNT + 24)
+
+#define SPRITE_INDEX_SLIDER_ON 5
+#define SPRITE_INDEX_SLIDER_OFF 7
+*/
+const uint8_t pgm_P_RETURN[] PROGMEM         = { RF_R, RF_E, RF_T, RF_U, RF_R, RF_N };
+const uint8_t pgm_P_RESET_TOKENS[] PROGMEM   = { RF_R, RF_E, RF_S, RF_E, RF_T, RAM_TILES_COUNT, RF_T, RF_O, RF_K, RF_E, RF_N, RF_S };
+const uint8_t pgm_P_CIRCUIT[] PROGMEM        = { RF_C, RF_I, RF_R, RF_C, RF_U, RF_I, RF_T };
+/*
+const uint8_t pgm_P_MUSIC[] PROGMEM          = { RF_M, RF_U, RF_S, RF_I, RF_C };
+const uint8_t pgm_P_SLIDER_ON[] PROGMEM       = { RF_SLIDER_ON_L, RF_SLIDER_ON_R };
+*/
+#define TILE_DPAD_LEFT 12
+#define TILE_DPAD_RIGHT 13
+
 int main()
 {
   ClearVram();
@@ -1191,6 +1335,7 @@ int main()
     buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
     buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
+    /*
     // Crude level select for now
     if (buttons.pressed == BTN_SR) {
       currentLevel++;
@@ -1203,6 +1348,7 @@ int main()
         currentLevel = 40;
       LoadLevel(currentLevel);
     }
+    */
 
     // Beat Level 31
     if (buttons.pressed == BTN_LEFT) {
@@ -1265,6 +1411,265 @@ int main()
           }
         }
       }
+    } else {
+
+    // -------------------- PROCESS POPUP MENU --------------------
+    // If we pressed the START button with no other buttons held down
+    if (buttons.pressed & BTN_START && buttons.held == BTN_START) {
+#define MENU_WIDTH 18
+#define MENU_HEIGHT 5
+#define MENU_START_X 7
+#define MENU_START_Y 12
+#define TILE_MENU_BG TILE_BACKGROUND
+#if 0
+      // Check to see if we are advancing a level
+      if (youWin) {
+        /*        if (startWinsGame) {
+          EpicWin(&buttons);
+          goto title_screen;
+          }*/
+        currentLevel++;
+        if (currentLevel > 40)
+          currentLevel = 1;
+        /*
+        for (uint8_t i = HAND_START_X; i < HAND_START_X + sizeof(pgm_W_PRESS_START); ++i)
+          SetTile(i, HAND_START_Y - 2, TILE_BACKGROUND);
+        */
+        SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
+        WaitVsync(1); // Avoid single frame glitches after changing the user ram tile count
+        LoadLevel(currentLevel);
+        continue;
+      }
+#endif
+      /*
+      // Hide all the overlay sprites
+      for (uint8_t i = OVERLAY_SPRITE_START; i < MAX_SPRITES - 1; ++i)
+        sprites[i].flags |= SPRITE_OFF;
+      */
+      // Play a sound effect that indicates the popup menu, unfortunately if music is playing, a TriggerFx won't work
+      TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+
+      // save what is behind the popup menu
+      uint8_t backing[MENU_HEIGHT][MENU_WIDTH];
+      for (uint8_t y = 0; y < MENU_HEIGHT; ++y)
+        for (uint8_t x = 0; x < MENU_WIDTH; ++x)
+          backing[y][x] = GetTile(MENU_START_X + x, MENU_START_Y + y);
+
+      // Put all the stuff we'll need to display for the menu into user ram tiles
+      // Reserve some extra tiles, but keep the sprites that are displaying the current level visible
+      // By reserving all the tiles but two, it keeps the overlay sprites from showing through the popup menu
+
+      WaitVsync(1); // Ensures the sprites have a chance to hide before we reuse their ram tiles, avoiding glitches
+      SetUserRamTilesCount(RAM_TILES_COUNT);
+
+      // Load the popup menu into ram tiles starting at 0
+      uint8_t rf_popup_len = sizeof(rf_popup) / 8;
+      RamFont_Load(rf_popup, GAME_USER_RAM_TILES_COUNT, rf_popup_len, 0xFF, 0x00);
+
+      // load the popup menu border after that (starting at the user ram tile: rf_popup_len) with a different fg color
+      uint8_t rf_popup_border_len = sizeof(rf_popup_border) / 8;
+      RamFont_Load(rf_popup_border, GAME_USER_RAM_TILES_COUNT + rf_popup_len, rf_popup_border_len, 0xA4, 0x00);
+
+      // Make the top right and bottom left pixels of the border "transparent"
+      uint8_t bgTile;
+      char bgTilePixel;
+      uint8_t* ramTile;
+
+      bgTile = GetTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y);
+      bgTilePixel = pgm_read_byte(tileset + bgTile * 64 + 7); // 7 is top right pixel
+      ramTile = GetUserRamTile(RF_B_TR); // top right corner in rf_popup
+      ramTile[7] = bgTilePixel; // top right pixel of ramTile
+
+      bgTile = GetTile(MENU_START_X, MENU_START_Y + MENU_HEIGHT - 1);
+      bgTilePixel = pgm_read_byte(tileset + bgTile * 64 + 56); // 56 is bottom left pixel
+      ramTile = GetUserRamTile(RF_B_BL); // bottom left corner in rf_popup
+      ramTile[56] = bgTilePixel; // bottom left pixel of ramTile
+
+      // Draw the current level number in the color corresponding to its difficulty
+      RamFont_Load2Digits(rf_digits, GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len, currentLevel, RamFont_GetLevelColor(currentLevel), 0x00);
+      //TileToRam(SPRITE_INDEX_SLIDER_ON, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
+
+      // Draw the menu background
+      Fill(MENU_START_X + 1, MENU_START_Y + 1, MENU_WIDTH - 2, MENU_HEIGHT - 2, TILE_MENU_BG);
+      SetRamTile(MENU_START_X, MENU_START_Y, RF_B_TL);
+      for (uint8_t i = MENU_START_X + 1; i < MENU_START_X + MENU_WIDTH - 1; ++i)
+        SetRamTile(i, MENU_START_Y, RF_B_T);
+      SetRamTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y, RF_B_TR);
+      for (uint8_t i = MENU_START_Y + 1; i < MENU_START_Y + MENU_HEIGHT - 1; ++i) {
+        SetRamTile(MENU_START_X, i, RF_B_L);
+        SetRamTile(MENU_START_X + MENU_WIDTH - 1, i, RF_B_R);
+      }
+      SetRamTile(MENU_START_X, MENU_START_Y + MENU_HEIGHT - 1, RF_B_BL);
+      for (uint8_t i = MENU_START_X + 1; i < MENU_START_X + MENU_WIDTH - 1; ++i)
+        SetRamTile(i, MENU_START_Y + MENU_HEIGHT - 1, RF_B_B);
+      SetRamTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y + MENU_HEIGHT - 1, RF_B_BR);
+
+      RamFont_Print(MENU_START_X + 5, MENU_START_Y + 1, pgm_P_RETURN, sizeof(pgm_P_RETURN));
+      RamFont_Print(MENU_START_X + 5, MENU_START_Y + 2, pgm_P_RESET_TOKENS, sizeof(pgm_P_RESET_TOKENS));
+      RamFont_Print(MENU_START_X + 5, MENU_START_Y + 3, pgm_P_CIRCUIT, sizeof(pgm_P_CIRCUIT));
+      //RamFont_Print(MENU_START_X + 5, MENU_START_Y + 4, pgm_P_MUSIC, sizeof(pgm_P_MUSIC));
+
+      SetRamTile(MENU_START_X + 5 + 9, MENU_START_Y + 3, RF_OnesPlace);
+      SetRamTile(MENU_START_X + 5 + 8, MENU_START_Y + 3, RF_TensPlace);
+      /*
+      if (!BitArray_readBit(currentLevel))
+        SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
+      */
+      /*
+      if (IsSongPlaying()) {
+        // if we needed multiple sliders in the same menu, you wouldn't want to use TileToRam, instead you'd want
+        // to have both the on and off states of the slider loaded into different ram tiles at the same time
+        TileToRam(SPRITE_INDEX_SLIDER_ON, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
+        //RamFont_Print(MENU_START_X + 6 + 6, MENU_START_Y + 5, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON);
+      } else {
+        TileToRam(SPRITE_INDEX_SLIDER_OFF, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
+        //RamFont_Print(MENU_START_X + 6 + 6, MENU_START_Y + 5, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON));
+      }
+      RamFont_Print(MENU_START_X + 5 + 6, MENU_START_Y + 4, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON));
+      */
+      int8_t prev_selection;
+      int8_t selection = 0;
+      bool confirmed = false;
+
+      uint8_t selectedLevel = currentLevel;
+
+      // The popup menu has its own run loop
+      for (;;) {
+
+        SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
+        prev_selection = selection;
+
+        // Read the current state of the player's controller
+        buttons.prev = buttons.held;
+        buttons.held = ReadJoypad(0);
+        buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
+        buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
+
+        if (buttons.pressed & BTN_START) {
+          confirmed = true;
+          break;
+        }
+
+        if (buttons.pressed & BTN_UP) {
+          if (selection > 0) {
+            selection--;
+            TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+            for (uint8_t x = MENU_START_X + 1; x <= MENU_START_X + 3; ++x)
+              SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_MENU_BG);
+            SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
+            prev_selection = selection;
+          }
+        } else if (buttons.pressed & BTN_DOWN) {
+          if (selection < 2) {
+            selection++;
+            TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+            for (uint8_t x = MENU_START_X + 1; x <= MENU_START_X + 3; ++x)
+              SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_MENU_BG);
+            SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
+            prev_selection = selection;
+          }
+        }
+        if (selection == 2) {
+          SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_DPAD_LEFT);
+          SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_DPAD_RIGHT);
+        }
+
+        if ((selection == 2) && ((buttons.pressed & BTN_LEFT) || (buttons.pressed & BTN_RIGHT))) {
+          if (buttons.pressed & BTN_LEFT) {
+            if (selectedLevel > 1) {
+              selectedLevel--;
+            } else {
+              selectedLevel = 40;
+            }
+            RamFont_Load2Digits(rf_digits, GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len, selectedLevel, RamFont_GetLevelColor(selectedLevel), 0x00);
+            /*
+            if (!BitArray_readBit(selectedLevel))
+              SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
+              else*/
+              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_BACKGROUND);
+
+            TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+          } else if (buttons.pressed & BTN_RIGHT) {
+            if (selectedLevel < 40) {
+              selectedLevel++;
+            } else {
+              selectedLevel = 1;
+            }
+            RamFont_Load2Digits(rf_digits, GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len, selectedLevel, RamFont_GetLevelColor(selectedLevel), 0x00);
+            /*if (!BitArray_readBit(selectedLevel))
+              SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
+              else*/
+              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_BACKGROUND);
+
+            TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+          }
+        }
+        /*
+        if (selection == 3) {
+          if (IsSongPlaying()) {
+            SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_MENU_BG);
+            SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_DPAD_LEFT);
+          } else {
+            SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_MENU_BG);
+            SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_DPAD_RIGHT);
+          }
+        }
+
+        if ((selection == 3) && ((buttons.pressed & BTN_LEFT) || (buttons.pressed & BTN_RIGHT))) {
+          if ((buttons.pressed & BTN_LEFT) && IsSongPlaying()) {
+            TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+            TileToRam(SPRITE_INDEX_SLIDER_OFF, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
+            //RamFont_Print(MENU_START_X + 6 + 6, MENU_START_Y + 2 + selection, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON));
+            StopSong();
+          } else if ((buttons.pressed & BTN_RIGHT) && !IsSongPlaying()) {
+            TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+            TileToRam(SPRITE_INDEX_SLIDER_ON, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
+            //RamFont_Print(MENU_START_X + 6 + 6, MENU_START_Y + 2 + selection, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON));
+            ResumeSong();
+          }
+        }
+        */
+        WaitVsync(1);
+      }
+      /*
+#if defined(OPTION_PERSIST_MUSIC_PREF)
+      if (IsSongPlaying()) {
+        if (BitArray_readBit(0)) {
+          BitArray_clearBit(0);
+          SaveHighScore(bitarray);
+        }
+      } else {
+        if (!BitArray_readBit(0)) {
+          BitArray_setBit(0);
+          SaveHighScore(bitarray);
+        }
+      }
+#endif
+      */
+      SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
+
+      // restore what was behind the popup menu
+      for (uint8_t y = 0; y < MENU_HEIGHT; ++y)
+        for (uint8_t x = 0; x < MENU_WIDTH; ++x)
+          SetTile(MENU_START_X + x, MENU_START_Y + y, backing[y][x]);
+
+      TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+      //BB_triggerFx(7);
+
+      if (confirmed && selection == 1)
+        LoadLevel(currentLevel);
+      else if (confirmed && selectedLevel != currentLevel) {
+        currentLevel = selectedLevel;
+        LoadLevel(currentLevel);
+      }
+      /*
+      // Show all the overlay sprites
+      for (uint8_t i = OVERLAY_SPRITE_START; i < MAX_SPRITES - 1; ++i)
+        sprites[i].flags &= (sprites[i].flags ^ SPRITE_OFF);
+      */
     }
+    // ----------------------------------------
+    } // else win/lose
+
   }
 }
