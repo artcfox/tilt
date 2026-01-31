@@ -226,18 +226,21 @@ static void LoadLevel(const uint8_t level)
   youLose = false;
   playedYouLoseSound = false;
 
-  // Draw LEVEL ##
-  DrawMap((SCREEN_TILES_H - 8) / 2, ENTIRE_GAMEBOARD_TOP - 3, map_level);
+  // Draw PUZZLE ##
+  DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 4, map_puzzle);
   uint8_t digits[2] = {0};
   BCD_addConstant(digits, 2, level);
-  SetTile((SCREEN_TILES_H - 8) / 2 + 6, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[1]);
-  SetTile((SCREEN_TILES_H - 8) / 2 + 7, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[0]);
+  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 1, ENTIRE_GAMEBOARD_TOP - 4, TILE_NUM_START_DIGITS + digits[1]);
+  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 2, ENTIRE_GAMEBOARD_TOP - 4, TILE_NUM_START_DIGITS + digits[0]);
 
   uint8_t levelColor = GetLevelColor(level);
-  SetTile((SCREEN_TILES_H - 8) / 2 - 3, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
-  SetTile((SCREEN_TILES_H - 8) / 2 - 2, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
-  SetTile((SCREEN_TILES_H - 8) / 2 + 9, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
-  SetTile((SCREEN_TILES_H - 8) / 2 + 10, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+  //SetTile(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+  //SetTile(ENTIRE_GAMEBOARD_LEFT + 1, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+
+  for (uint8_t i = ENTIRE_GAMEBOARD_LEFT; i < ENTIRE_GAMEBOARD_LEFT + MAP_BOARD_WIDTH; ++i)
+    SetTile(i, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+  //SetTile((SCREEN_TILES_H - 8) / 2 + 9, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+  //SetTile((SCREEN_TILES_H - 8) / 2 + 10, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
 
   DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP, map_board);
 
@@ -1030,6 +1033,21 @@ void RamFont_Print_Minus_A(uint8_t x, uint8_t y, const char* message, uint8_t le
   }
 }
 
+const uint8_t rf_popup[] PROGMEM = { // *RETUNSOKPZL
+  0x00, 0x00, 0x18, 0x3c, 0x3c, 0x18, 0x00, 0x00,
+  0x3e, 0x63, 0x61, 0x3f, 0x0d, 0x79, 0x71, 0x00,
+  0x3e, 0x63, 0x01, 0x3f, 0x01, 0x7f, 0x7e, 0x00,
+  0x3e, 0x7f, 0x09, 0x08, 0x0c, 0x0c, 0x0c, 0x00,
+  0x20, 0x61, 0x61, 0x61, 0x73, 0x3f, 0x1e, 0x00,
+  0x23, 0x67, 0x6d, 0x79, 0x71, 0x63, 0x23, 0x00,
+  0x1e, 0x31, 0x01, 0x3e, 0x60, 0x73, 0x3e, 0x00,
+  0x38, 0x66, 0x61, 0x61, 0x71, 0x7f, 0x3e, 0x00,
+  0x32, 0x1b, 0x0b, 0x1f, 0x3b, 0x73, 0x73, 0x00,
+  0x3e, 0x63, 0x71, 0x3f, 0x03, 0x03, 0x02, 0x00,
+  0x3e, 0x60, 0x30, 0x08, 0x06, 0x7f, 0x3e, 0x00,
+  0x02, 0x03, 0x01, 0x01, 0x41, 0x7f, 0x3e, 0x00,
+};
+/*
 // Compressed ram font data for other characters: *RESTCIUMNOK(LOCK_ICON)
 // run ramfont/main ramfont-popup.png to generate
 const uint8_t rf_popup[] PROGMEM = {
@@ -1047,7 +1065,7 @@ const uint8_t rf_popup[] PROGMEM = {
   0x32, 0x1b, 0x0b, 0x1f, 0x3b, 0x73, 0x73, 0x00,
   0x18, 0x24, 0x24, 0x7e, 0x56, 0x6a, 0x7e, 0x00,
 };
-
+*/
 // Compressed ram font data for popup border
 // run ramfont/main ramfont-popup-border.png to generate
 const uint8_t rf_popup_border[] PROGMEM = {
@@ -1129,33 +1147,33 @@ void TileToRam(uint16_t toff, uint16_t roff, uint16_t len, const char* tiles, ui
      ramTile[roff++] = pgm_read_byte(tiles + toff++);
 }
 
-// Defines for the ram fonts used in the popup menu
+// Defines for the ram fonts used in the popup menu // *RETUNSOKPZL
 #define RF_ASTERISK (GAME_USER_RAM_TILES_COUNT)
 #define RF_R (GAME_USER_RAM_TILES_COUNT + 1)
 #define RF_E (GAME_USER_RAM_TILES_COUNT + 2)
-#define RF_S (GAME_USER_RAM_TILES_COUNT + 3)
-#define RF_T (GAME_USER_RAM_TILES_COUNT + 4)
-#define RF_C (GAME_USER_RAM_TILES_COUNT + 5)
-#define RF_I (GAME_USER_RAM_TILES_COUNT + 6)
-#define RF_U (GAME_USER_RAM_TILES_COUNT + 7)
-#define RF_M (GAME_USER_RAM_TILES_COUNT + 8)
-#define RF_N (GAME_USER_RAM_TILES_COUNT + 9)
-#define RF_O (GAME_USER_RAM_TILES_COUNT + 10)
-#define RF_K (GAME_USER_RAM_TILES_COUNT + 11)
+#define RF_T (GAME_USER_RAM_TILES_COUNT + 3)
+#define RF_U (GAME_USER_RAM_TILES_COUNT + 4)
+#define RF_N (GAME_USER_RAM_TILES_COUNT + 5)
+#define RF_S (GAME_USER_RAM_TILES_COUNT + 6)
+#define RF_O (GAME_USER_RAM_TILES_COUNT + 7)
+#define RF_K (GAME_USER_RAM_TILES_COUNT + 8)
+#define RF_P (GAME_USER_RAM_TILES_COUNT + 9)
+#define RF_Z (GAME_USER_RAM_TILES_COUNT + 10)
+#define RF_L (GAME_USER_RAM_TILES_COUNT + 11)
 
-#define RF_UNSOLVED (GAME_USER_RAM_TILES_COUNT + 12)
+//#define RF_UNSOLVED (GAME_USER_RAM_TILES_COUNT + 12)
 
-#define RF_B_TL (GAME_USER_RAM_TILES_COUNT + 13)
-#define RF_B_T (GAME_USER_RAM_TILES_COUNT + 14)
-#define RF_B_TR (GAME_USER_RAM_TILES_COUNT + 15)
-#define RF_B_L (GAME_USER_RAM_TILES_COUNT + 16)
-#define RF_B_R (GAME_USER_RAM_TILES_COUNT + 17)
-#define RF_B_BL (GAME_USER_RAM_TILES_COUNT + 18)
-#define RF_B_B (GAME_USER_RAM_TILES_COUNT + 19)
-#define RF_B_BR (GAME_USER_RAM_TILES_COUNT + 20)
+#define RF_B_TL (GAME_USER_RAM_TILES_COUNT + 12)
+#define RF_B_T (GAME_USER_RAM_TILES_COUNT + 13)
+#define RF_B_TR (GAME_USER_RAM_TILES_COUNT + 14)
+#define RF_B_L (GAME_USER_RAM_TILES_COUNT + 15)
+#define RF_B_R (GAME_USER_RAM_TILES_COUNT + 16)
+#define RF_B_BL (GAME_USER_RAM_TILES_COUNT + 17)
+#define RF_B_B (GAME_USER_RAM_TILES_COUNT + 18)
+#define RF_B_BR (GAME_USER_RAM_TILES_COUNT + 19)
 
-#define RF_OnesPlace (GAME_USER_RAM_TILES_COUNT + 21)
-#define RF_TensPlace (GAME_USER_RAM_TILES_COUNT + 22)
+#define RF_OnesPlace (GAME_USER_RAM_TILES_COUNT + 20)
+#define RF_TensPlace (GAME_USER_RAM_TILES_COUNT + 21)
 
 /*
 #define RF_SLIDER_ON_L (GAME_USER_RAM_TILES_COUNT + 23)
@@ -1166,13 +1184,13 @@ void TileToRam(uint16_t toff, uint16_t roff, uint16_t len, const char* tiles, ui
 */
 const uint8_t pgm_P_RETURN[] PROGMEM         = { RF_R, RF_E, RF_T, RF_U, RF_R, RF_N };
 const uint8_t pgm_P_RESET_TOKENS[] PROGMEM   = { RF_R, RF_E, RF_S, RF_E, RF_T, RAM_TILES_COUNT, RF_T, RF_O, RF_K, RF_E, RF_N, RF_S };
-const uint8_t pgm_P_CIRCUIT[] PROGMEM        = { RF_C, RF_I, RF_R, RF_C, RF_U, RF_I, RF_T };
+const uint8_t pgm_P_PUZZLE[] PROGMEM        = { RF_P, RF_U, RF_Z, RF_Z, RF_L, RF_E };
 /*
 const uint8_t pgm_P_MUSIC[] PROGMEM          = { RF_M, RF_U, RF_S, RF_I, RF_C };
 const uint8_t pgm_P_SLIDER_ON[] PROGMEM       = { RF_SLIDER_ON_L, RF_SLIDER_ON_R };
 */
-#define TILE_DPAD_LEFT 12
-#define TILE_DPAD_RIGHT 13
+#define TILE_DPAD_LEFT 16
+#define TILE_DPAD_RIGHT 17
 
 int main()
 {
@@ -1226,7 +1244,8 @@ int main()
       if (buttons.pressed & BTN_UP) {
         if (selection > 0) {
           selection--;
-          TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP);
+          //TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
@@ -1234,7 +1253,8 @@ int main()
       } else if (buttons.pressed & BTN_DOWN) {
         if (selection < 1) {
           selection++;
-          TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP);
+          //TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
@@ -1245,6 +1265,7 @@ int main()
     }
 
     //TriggerNote(SFX_CHANNEL, SFX_SLIDER_HOLE, SFX_SPEED_SLIDER_HOLE, SFX_VOL_SLIDER_HOLE);
+    TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
 
     if (selection == 0)
       goto start_game;
@@ -1303,6 +1324,7 @@ int main()
       buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
       if (buttons.pressed & BTN_START) {
+        TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
         //TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
         RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0x00);
         goto title_screen;
@@ -1506,11 +1528,11 @@ int main()
 
       RamFont_Print(MENU_START_X + 5, MENU_START_Y + 1, pgm_P_RETURN, sizeof(pgm_P_RETURN));
       RamFont_Print(MENU_START_X + 5, MENU_START_Y + 2, pgm_P_RESET_TOKENS, sizeof(pgm_P_RESET_TOKENS));
-      RamFont_Print(MENU_START_X + 5, MENU_START_Y + 3, pgm_P_CIRCUIT, sizeof(pgm_P_CIRCUIT));
+      RamFont_Print(MENU_START_X + 5, MENU_START_Y + 3, pgm_P_PUZZLE, sizeof(pgm_P_PUZZLE));
       //RamFont_Print(MENU_START_X + 5, MENU_START_Y + 4, pgm_P_MUSIC, sizeof(pgm_P_MUSIC));
 
-      SetRamTile(MENU_START_X + 5 + 9, MENU_START_Y + 3, RF_OnesPlace);
-      SetRamTile(MENU_START_X + 5 + 8, MENU_START_Y + 3, RF_TensPlace);
+      SetRamTile(MENU_START_X + 5 + 8, MENU_START_Y + 3, RF_OnesPlace);
+      SetRamTile(MENU_START_X + 5 + 7, MENU_START_Y + 3, RF_TensPlace);
       /*
       if (!BitArray_readBit(currentLevel))
         SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
