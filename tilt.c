@@ -955,8 +955,8 @@ const char pgm_INVENTED_BY1[] PROGMEM = "INVENTEDaBYaVESAaTIMONEN[";
 const char pgm_INVENTED_BY2[] PROGMEM = "TIMOaJOKITALO";
 const char pgm_START_GAME[] PROGMEM = "STARTaGAME";
 const char pgm_HOW_TO_PLAY[] PROGMEM = "HOWaTOaPLAY";
-const char pgm_YOU_LOSE[] PROGMEM = "YOUaLOSE";
-const char pgm_YOU_WIN[] PROGMEM = "YOUaWIN";
+const char pgm_YOU_LOSE[] PROGMEM = "aaFAIL";
+const char pgm_YOU_WIN[] PROGMEM = "aaPASS";
 
 // Loads 'len' compressed 'ramfont' tiles into user ram tiles starting at 'user_ram_tile_start' using 'fg_color' and 'bg_color'
 void RamFont_Load(const uint8_t* ramfont, uint8_t user_ram_tile_start, uint8_t len, uint8_t fg_color, uint8_t bg_color)
@@ -1226,14 +1226,18 @@ int main()
     if (youLose || youWin) {
       // Load the entire alphabet + extras
       SetUserRamTilesCount(RAM_TILES_COUNT);
-      RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, 0xFF, 0x00);
+      RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, youWin ? 0x20 : 0x0E, 0x00);
+      //RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, 0x00, 0x00);
 
       if (youLose) {
         RamFont_Print_Minus_A(12, 23, pgm_YOU_LOSE, sizeof(pgm_YOU_LOSE) - 1);
+        //RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0x0E);
       } else if (youWin) {
         //TriggerNote(SFX_CHANNEL, SFX_WIN, SFX_SPEED_WIN, SFX_VOL_WIN);
         RamFont_Print_Minus_A(12, 23, pgm_YOU_WIN, sizeof(pgm_YOU_WIN) - 1);
+        //RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0x20);
       }
+
 
       for (;;) {
         WaitVsync(1);
