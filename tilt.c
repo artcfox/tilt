@@ -60,6 +60,7 @@ bool playedYouLoseSound;
 
 // How many pieces hit their end stops this frame (affect whether the sfx plays and its volume)
 uint8_t numSlidersHitEndStops;
+bool playFellDownHoleSound;
 
 // The configuration of the playing board
 uint8_t board[BOARD_HEIGHT][BOARD_WIDTH] = {
@@ -651,7 +652,7 @@ static void UpdatePhysicsLeft()
         if (!moveInfo[move].fellDownHole)
           ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
+          playFellDownHoleSound = true; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -690,7 +691,7 @@ static void UpdatePhysicsUp()
         if (!moveInfo[move].fellDownHole)
           ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
+          playFellDownHoleSound = true; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -730,7 +731,7 @@ static void UpdatePhysicsRight()
         if (!moveInfo[move].fellDownHole)
           ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
+          playFellDownHoleSound = true; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -770,7 +771,7 @@ static void UpdatePhysicsDown()
         if (!moveInfo[move].fellDownHole)
           ++numSlidersHitEndStops; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN); //TriggerFx(FX_THUD, 80, true);
         else
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
+          playFellDownHoleSound = true; //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5); //TriggerFx(FX_HOLE, 80, true);
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole) {
@@ -827,9 +828,16 @@ static void GravityAnimation(uint8_t direction)
   do {
     allDoneMoving = true;
     numSlidersHitEndStops = 0;
+    playFellDownHoleSound = false;
+
     UpdatePhysics(direction);
     if (numSlidersHitEndStops > 0)
       TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN + 24 * numSlidersHitEndStops);
+      //TriggerFx(FX_THUD, 80, true);
+
+    if (playFellDownHoleSound)
+      TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP + 24 * 5);
+
 
     for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
       if (moveInfo[move].piece == 0)
@@ -1106,7 +1114,8 @@ int main()
         if (selection < 1) {
           selection++;
           //TriggerFx(FX_THUD, 80, true);
-          TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+          TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+          //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
@@ -1116,7 +1125,7 @@ int main()
       WaitVsync(1);
     }
 
-    //TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+    //TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
 
     if (selection == 0)
       goto start_game;

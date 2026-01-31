@@ -95,7 +95,7 @@ INCLUDES = -I"$(KERNEL_DIR)"
 DEPS  = Makefile
 
 ## Build
-all: ./data/titlescreen.inc ./data/tileset.inc ./data/spriteset.inc ./data/midisong.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze
+all: ./data/titlescreen.inc ./data/tileset.inc ./data/spriteset.inc ./data/midisong.inc ./data/PCM_slider_stop.inc ./data/PCM_slider_hole.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze
 
 ## Compile Kernel files (prefix with .)
 .uzeboxVideoEngineCore.o: $(KERNEL_DIR)/uzeboxVideoEngineCore.s $(DEPS)
@@ -134,6 +134,12 @@ all: ./data/titlescreen.inc ./data/tileset.inc ./data/spriteset.inc ./data/midis
 
 ./data/midisong.inc: ./data/midisong.h ./data/mconvert.cfg
 	$(UZEBIN_DIR)/mconvert ./data/mconvert.cfg
+
+./data/PCM_slider_stop.inc: ./data/PCM_slider_stop.raw
+	$(UZEBIN_DIR)/bin2hex ./data/PCM_slider_stop.raw ./data/PCM_slider_stop.inc
+
+./data/PCM_slider_hole.inc: ./data/PCM_slider_hole.raw
+	$(UZEBIN_DIR)/bin2hex ./data/PCM_slider_hole.raw ./data/PCM_slider_hole.inc
 
 ## Link
 $(TARGET): $(OBJECTS) $(DEPS)
