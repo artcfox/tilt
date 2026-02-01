@@ -1177,6 +1177,8 @@ int main()
   SetUserRamTilesCount(RAM_TILES_COUNT);
   RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, 0xFF, 0x00);
 
+  WaitVsync(1);
+
   DrawMap(4, 2, map_logo);
   RamFont_Print_Minus_A(11, 14, pgm_START_GAME, sizeof(pgm_START_GAME) - 1);
   RamFont_Print_Minus_A(11, 16, pgm_HOW_TO_PLAY, sizeof(pgm_HOW_TO_PLAY) - 1);
