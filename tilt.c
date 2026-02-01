@@ -205,7 +205,7 @@ static bool BCD_addConstant(uint8_t* const num, const uint8_t digits, uint8_t x)
 #define TILE_BLUE 4
 #define TILE_RED 5
 
-uint8_t GetLevelColor(uint8_t level)
+uint8_t GetDifficultyTileForLevel(uint8_t level)
 {
   if ((level >= 1) && (level <= 10))
     return TILE_GREEN;
@@ -233,7 +233,7 @@ static void LoadLevel(const uint8_t level)
   SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 1, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[1]);
   SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 2, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[0]);
 
-  uint8_t levelColor = GetLevelColor(level);
+  uint8_t levelColor = GetDifficultyTileForLevel(level);
   //SetTile(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
   //SetTile(ENTIRE_GAMEBOARD_LEFT + 1, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
 
@@ -961,8 +961,8 @@ const char pgm_INVENTED_BY1[] PROGMEM = "INVENTEDaBYaVESAaTIMONEN[";
 const char pgm_INVENTED_BY2[] PROGMEM = "TIMOaJOKITALO";
 const char pgm_START_GAME[] PROGMEM = "STARTaGAME";
 const char pgm_HOW_TO_PLAY[] PROGMEM = "HOWaTOaPLAY";
-const char pgm_YOU_LOSE[] PROGMEM = "aaFAIL";
-const char pgm_YOU_WIN[] PROGMEM = "aaPASS";
+const char pgm_FAIL[] PROGMEM = "FAIL";
+const char pgm_PASS[] PROGMEM = "PASS";
 
 // Loads 'len' compressed 'ramfont' tiles into user ram tiles starting at 'user_ram_tile_start' using 'fg_color' and 'bg_color'
 void RamFont_Load(const uint8_t* ramfont, uint8_t user_ram_tile_start, uint8_t len, uint8_t fg_color, uint8_t bg_color)
@@ -1109,7 +1109,7 @@ void RamFont_Print(uint8_t x, uint8_t y, const uint8_t* message, uint8_t len)
 uint8_t RamFont_GetLevelColor(uint8_t level)
 {
   if ((level >= 1) && (level <= 10))
-    return 0x20;  // TILE_GREEN
+    return 0x20; // TILE_GREEN
   else if ((level >= 11) && (level <= 20))
     return 0x2F; // TILE_YELLOW
   else if ((level >= 21) && (level <= 30))
@@ -1216,7 +1216,6 @@ int main()
   RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, 0xFF, 0x00);
 
   DrawMap(4, 2, map_logo);
-  //RamFont_Print_Minus_A(10, 5, pgm_TITLE, sizeof(pgm_TITLE) - 1);
   RamFont_Print_Minus_A(11, 14, pgm_START_GAME, sizeof(pgm_START_GAME) - 1);
   RamFont_Print_Minus_A(11, 16, pgm_HOW_TO_PLAY, sizeof(pgm_HOW_TO_PLAY) - 1);
   RamFont_Print_Minus_A(1, 22, pgm_UZEBOX_GAME, sizeof(pgm_UZEBOX_GAME) - 1);
@@ -1248,7 +1247,6 @@ int main()
       if (buttons.pressed & BTN_UP) {
         if (selection > 0) {
           selection--;
-          //TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP);
           TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
@@ -1257,7 +1255,6 @@ int main()
       } else if (buttons.pressed & BTN_DOWN) {
         if (selection < 1) {
           selection++;
-          //TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP);
           TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
           SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
@@ -1268,7 +1265,6 @@ int main()
       WaitVsync(1);
     }
 
-    //TriggerNote(SFX_CHANNEL, SFX_SLIDER_HOLE, SFX_SPEED_SLIDER_HOLE, SFX_VOL_SLIDER_HOLE);
     TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
 
     if (selection == 0)
@@ -1317,7 +1313,6 @@ int main()
       vram[out + SCREEN_TILES_H * 2] = output;
     }
 
-    //TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
     RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0xFF);
 
     for (;;) {
@@ -1330,7 +1325,6 @@ int main()
       if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
           (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
         TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
-        //TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
         RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0x00);
         goto title_screen;
       }
@@ -1359,7 +1353,7 @@ int main()
     buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
     buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
-    // Beat Level 31
+    // Beat Level 32
     if (buttons.pressed == BTN_LEFT) {
       TiltBoardLeft();
       UpdateBoardAfterMove();
@@ -1379,19 +1373,13 @@ int main()
     }
 
     if (youLose || youWin) {
-      // Load the entire alphabet + extras
       SetUserRamTilesCount(RAM_TILES_COUNT);
       RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, youWin ? 0x20 : 0x0E, 0x00);
-      //RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, 0x00, 0x00);
 
-      if (youLose) {
-        RamFont_Print_Minus_A(12, 23, pgm_YOU_LOSE, sizeof(pgm_YOU_LOSE) - 1);
-        //RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0x0E);
-      } else if (youWin) {
-        //TriggerNote(SFX_CHANNEL, SFX_WIN, SFX_SPEED_WIN, SFX_VOL_WIN);
-        RamFont_Print_Minus_A(12, 23, pgm_YOU_WIN, sizeof(pgm_YOU_WIN) - 1);
-        //RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0x20);
-      }
+      if (youLose)
+        RamFont_Print_Minus_A(14, 23, pgm_FAIL, sizeof(pgm_FAIL) - 1);
+      else if (youWin)
+        RamFont_Print_Minus_A(14, 23, pgm_PASS, sizeof(pgm_PASS) - 1);
 
       for (;;) {
         WaitVsync(1);
@@ -1404,9 +1392,10 @@ int main()
 
         if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
             (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
+
           // Erase Win/Lose message
-          for (uint8_t i = 0; i < sizeof(pgm_YOU_LOSE) - 1; ++i)
-            SetTile(12 + i, 23, 0);
+          for (uint8_t i = 0; i < sizeof(pgm_FAIL) - 1; ++i)
+            SetTile(14 + i, 23, 0);
 
           SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
 
