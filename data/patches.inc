@@ -73,8 +73,8 @@ const char hole[] PROGMEM = {
 
 #define SFX_VOL_SLIDER_STOP    127
 #define SFX_VOL_SLIDER_HOLE    127
-#define SFX_VOL_MOUSE_DOWN     255
-#define SFX_VOL_MOUSE_UP       255
+#define SFX_VOL_MOUSE_DOWN     127
+#define SFX_VOL_MOUSE_UP       127
 
 extern const char waves[];
 const struct PatchStruct patches[] PROGMEM = {
