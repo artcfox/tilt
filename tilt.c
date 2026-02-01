@@ -227,20 +227,23 @@ static void LoadLevel(const uint8_t level)
   playedYouLoseSound = false;
 
   // Draw PUZZLE ##
-  DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 4, map_puzzle);
+  DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 3, map_puzzle);
   uint8_t digits[2] = {0};
   BCD_addConstant(digits, 2, level);
-  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 1, ENTIRE_GAMEBOARD_TOP - 4, TILE_NUM_START_DIGITS + digits[1]);
-  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 2, ENTIRE_GAMEBOARD_TOP - 4, TILE_NUM_START_DIGITS + digits[0]);
+  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 1, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[1]);
+  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 2, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[0]);
 
   uint8_t levelColor = GetLevelColor(level);
   //SetTile(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
   //SetTile(ENTIRE_GAMEBOARD_LEFT + 1, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
 
-  for (uint8_t i = ENTIRE_GAMEBOARD_LEFT; i < ENTIRE_GAMEBOARD_LEFT + MAP_BOARD_WIDTH; ++i)
-    SetTile(i, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+  for (uint8_t i = ENTIRE_GAMEBOARD_LEFT; i < ENTIRE_GAMEBOARD_LEFT + MAP_BOARD_WIDTH; ++i) {
+    SetTile(i, ENTIRE_GAMEBOARD_TOP - 2, levelColor);
+    //SetTile(i, ENTIRE_GAMEBOARD_TOP - 7, levelColor);
+  }
   //SetTile((SCREEN_TILES_H - 8) / 2 + 9, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
   //SetTile((SCREEN_TILES_H - 8) / 2 + 10, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
+
 
   DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP, map_board);
 
@@ -1238,7 +1241,8 @@ int main()
       buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
       buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
-      if (buttons.pressed & BTN_START)
+      if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
+          (buttons.pressed & BTN_A && buttons.held == BTN_A))
         break;
 
       if (buttons.pressed & BTN_UP) {
@@ -1323,7 +1327,8 @@ int main()
       buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
       buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
-      if (buttons.pressed & BTN_START) {
+      if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
+          (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
         TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
         //TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
         RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0x00);
@@ -1340,9 +1345,6 @@ int main()
   SetSpritesTileBank(0, tileset);
   SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
 
-  // Idea: Maybe create a looping MIDI file that is just the noise channel
-  //       so it can be started when pieces begin to slide, and be stopped
-  //       when all the pieces stop sliding?
   //ResumeSong();
 
   currentLevel = 1;
@@ -1356,21 +1358,6 @@ int main()
     buttons.held = ReadJoypad(0);
     buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
     buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
-
-    /*
-    // Crude level select for now
-    if (buttons.pressed == BTN_SR) {
-      currentLevel++;
-      if (currentLevel > 40)
-        currentLevel = 1;
-      LoadLevel(currentLevel);
-    } else if (buttons.pressed == BTN_SL) {
-      currentLevel--;
-      if (currentLevel < 1)
-        currentLevel = 40;
-      LoadLevel(currentLevel);
-    }
-    */
 
     // Beat Level 31
     if (buttons.pressed == BTN_LEFT) {
@@ -1406,7 +1393,6 @@ int main()
         //RamFont_SparkleLoad(rf_title, 0, sizeof(rf_title) / 8, 0x20);
       }
 
-
       for (;;) {
         WaitVsync(1);
 
@@ -1416,7 +1402,8 @@ int main()
         buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
         buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
-        if (buttons.pressed) {
+        if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
+            (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
           // Erase Win/Lose message
           for (uint8_t i = 0; i < sizeof(pgm_YOU_LOSE) - 1; ++i)
             SetTile(12 + i, 23, 0);
@@ -1426,7 +1413,7 @@ int main()
           if (youLose) {
             LoadLevel(currentLevel);
             break;
-          } else if (youWin){
+          } else if (youWin) {
             currentLevel = (currentLevel + 1) % 40;
             LoadLevel(currentLevel);
             break;
@@ -1437,32 +1424,13 @@ int main()
 
     // -------------------- PROCESS POPUP MENU --------------------
     // If we pressed the START button with no other buttons held down
-    if (buttons.pressed & BTN_START && buttons.held == BTN_START) {
+    if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
+        (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
 #define MENU_WIDTH 18
 #define MENU_HEIGHT 5
 #define MENU_START_X 7
 #define MENU_START_Y 12
 #define TILE_MENU_BG TILE_BACKGROUND
-#if 0
-      // Check to see if we are advancing a level
-      if (youWin) {
-        /*        if (startWinsGame) {
-          EpicWin(&buttons);
-          goto title_screen;
-          }*/
-        currentLevel++;
-        if (currentLevel > 40)
-          currentLevel = 1;
-        /*
-        for (uint8_t i = HAND_START_X; i < HAND_START_X + sizeof(pgm_W_PRESS_START); ++i)
-          SetTile(i, HAND_START_Y - 2, TILE_BACKGROUND);
-        */
-        SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
-        WaitVsync(1); // Avoid single frame glitches after changing the user ram tile count
-        LoadLevel(currentLevel);
-        continue;
-      }
-#endif
       /*
       // Hide all the overlay sprites
       for (uint8_t i = OVERLAY_SPRITE_START; i < MAX_SPRITES - 1; ++i)
@@ -1567,7 +1535,8 @@ int main()
         buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
         buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
-        if (buttons.pressed & BTN_START) {
+        if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
+            (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
           confirmed = true;
           break;
         }
