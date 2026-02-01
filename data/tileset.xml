@@ -4,7 +4,7 @@
   <output file="data/tileset.inc" remove-duplicate-tiles="true">
     <tiles var-name="tileset"/>
     <maps pointers-size="8">
-      <map left="18" top="0" width="11" height="1" var-name="map_puzzle" />
+      <map left="16" top="2" width="11" height="1" var-name="map_tilt_puzzle" />
 
       <map left="1" top="2" width="2" height="2" var-name="map_grid" />
       <map left="4" top="2" width="2" height="2" var-name="map_grid_t" />

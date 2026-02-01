@@ -34,6 +34,7 @@
 #include "data/tileset.inc"
 #include "data/patches.inc"
 //#include "data/midisong.h"
+#include "levels.h"
 
 typedef struct {
   uint16_t held;
@@ -44,13 +45,26 @@ typedef struct {
 
 #define GAME_USER_RAM_TILES_COUNT 0
 
-#define TILE_BACKGROUND 0
-#define TILE_FOREGROUND 1
+#define TILE_NUM_BACKGROUND 0
+#define TILE_NUM_GREEN 1
+#define TILE_NUM_YELLOW 2
+#define TILE_NUM_BLUE 3
+#define TILE_NUM_RED 4
+#define TILE_NUM_DPAD_LEFT 5
+#define TILE_NUM_DPAD_RIGHT 6
+#define TILE_NUM_START_DIGITS 7
 
 #define BOARD_HEIGHT 5
 #define BOARD_WIDTH 5
 #define LEVEL_SIZE (BOARD_WIDTH * BOARD_HEIGHT)
 #define BOARD_OFFSET_IN_LEVEL 0
+
+#define ENTIRE_GAMEBOARD_LEFT ((SCREEN_TILES_H - MAP_BOARD_WIDTH) / 2)
+#define ENTIRE_GAMEBOARD_TOP ((SCREEN_TILES_V - MAP_BOARD_HEIGHT) / 2)
+#define GAMEBOARD_ACTIVE_AREA_LEFT (ENTIRE_GAMEBOARD_LEFT + 2)
+#define GAMEBOARD_ACTIVE_AREA_TOP (ENTIRE_GAMEBOARD_TOP + 2)
+#define GAMEPIECE_WIDTH 2
+#define GAMEPIECE_HEIGHT 2
 
 uint8_t currentLevel;
 bool youWin;
@@ -69,15 +83,6 @@ uint8_t board[BOARD_HEIGHT][BOARD_WIDTH] = {
   {  0,  0,  0,  0,  0 },
   {  0,  0,  0,  0,  0 },
 };
-
-#include "levels.h"
-
-#define ENTIRE_GAMEBOARD_LEFT ((SCREEN_TILES_H - MAP_BOARD_WIDTH) / 2)
-#define ENTIRE_GAMEBOARD_TOP ((SCREEN_TILES_V - MAP_BOARD_HEIGHT) / 2)
-#define GAMEBOARD_ACTIVE_AREA_LEFT (ENTIRE_GAMEBOARD_LEFT + 2)
-#define GAMEBOARD_ACTIVE_AREA_TOP (ENTIRE_GAMEBOARD_TOP + 2)
-#define GAMEPIECE_WIDTH 2
-#define GAMEPIECE_HEIGHT 2
 
 // Each piece has a different tile map if it partially overlaps with the hole in the center of the board
 const VRAM_PTR_TYPE* MapPieceToTileMapForBoardPosition(uint8_t piece, uint8_t x, uint8_t y) {
@@ -200,25 +205,18 @@ static bool BCD_addConstant(uint8_t* const num, const uint8_t digits, uint8_t x)
   return false;
 }
 
-#define TILE_GREEN 2
-#define TILE_YELLOW 3
-#define TILE_BLUE 4
-#define TILE_RED 5
-
 uint8_t GetDifficultyTileForLevel(uint8_t level)
 {
   if ((level >= 1) && (level <= 10))
-    return TILE_GREEN;
+    return TILE_NUM_GREEN;
   else if ((level >= 11) && (level <= 20))
-    return TILE_YELLOW;
+    return TILE_NUM_YELLOW;
   else if ((level >= 21) && (level <= 30))
-    return TILE_BLUE;
+    return TILE_NUM_BLUE;
   else if ((level >= 31) && (level <= 40))
-    return TILE_RED;
+    return TILE_NUM_RED;
   return 0;
 }
-
-#define TILE_NUM_START_DIGITS 6
 
 static void LoadLevel(const uint8_t level)
 {
@@ -227,23 +225,15 @@ static void LoadLevel(const uint8_t level)
   playedYouLoseSound = false;
 
   // Draw PUZZLE ##
-  DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 3, map_puzzle);
+  DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 3, map_tilt_puzzle);
   uint8_t digits[2] = {0};
   BCD_addConstant(digits, 2, level);
-  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 1, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[1]);
-  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_PUZZLE_WIDTH + 2, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[0]);
+  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_TILT_PUZZLE_WIDTH + 1, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[1]);
+  SetTile(ENTIRE_GAMEBOARD_LEFT + MAP_TILT_PUZZLE_WIDTH + 2, ENTIRE_GAMEBOARD_TOP - 3, TILE_NUM_START_DIGITS + digits[0]);
 
-  uint8_t levelColor = GetDifficultyTileForLevel(level);
-  //SetTile(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
-  //SetTile(ENTIRE_GAMEBOARD_LEFT + 1, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
-
-  for (uint8_t i = ENTIRE_GAMEBOARD_LEFT; i < ENTIRE_GAMEBOARD_LEFT + MAP_BOARD_WIDTH; ++i) {
-    SetTile(i, ENTIRE_GAMEBOARD_TOP - 2, levelColor);
-    //SetTile(i, ENTIRE_GAMEBOARD_TOP - 7, levelColor);
-  }
-  //SetTile((SCREEN_TILES_H - 8) / 2 + 9, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
-  //SetTile((SCREEN_TILES_H - 8) / 2 + 10, ENTIRE_GAMEBOARD_TOP - 3, levelColor);
-
+  uint8_t difficultyStripe = GetDifficultyTileForLevel(level);
+  for (uint8_t i = ENTIRE_GAMEBOARD_LEFT; i < ENTIRE_GAMEBOARD_LEFT + MAP_BOARD_WIDTH; ++i)
+    SetTile(i, ENTIRE_GAMEBOARD_TOP - 2, difficultyStripe);
 
   DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP, map_board);
 
@@ -282,7 +272,6 @@ struct MOVE_INFO {
 } __attribute__ ((packed));
 
 #define MAX_MOVABLE_PIECES 5
-
 MOVE_INFO moveInfo[MAX_MOVABLE_PIECES];
 
 static void TiltBoardLeft() {
@@ -794,18 +783,6 @@ static void GravityAnimation(uint8_t direction)
     moveInfo[move].x = xStart << FP_SHIFT;
     moveInfo[move].y = yStart << FP_SHIFT;
     moveInfo[move].dx = moveInfo[move].dy = 0;
-
-    // The following code block would give each piece an initial velocity
-    /*
-    if (direction == BTN_LEFT)
-      moveInfo[move].dx = -WORLD_METER * 1;
-    else if (direction == BTN_UP)
-      moveInfo[move].dy = -WORLD_METER * 1;
-    else if (direction == BTN_RIGHT)
-      moveInfo[move].dx = WORLD_METER * 1;
-    else if (direction == BTN_DOWN)
-      moveInfo[move].dy = WORLD_METER * 1;
-    */
     moveInfo[move].doneMoving = false;
   }
 
@@ -822,7 +799,6 @@ static void GravityAnimation(uint8_t direction)
 
     if (playFellDownHoleSound)
       TriggerNote(SFX_CHANNEL, SFX_SLIDER_HOLE, SFX_SPEED_SLIDER_HOLE, SFX_VOL_SLIDER_HOLE + 24 * 5);
-
 
     for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
       if (moveInfo[move].piece == 0)
@@ -841,7 +817,6 @@ static void GravityAnimation(uint8_t direction)
 }
 
 // This function expects moveInfo to be populated before calling
-// Maybe make it so if you press a direction while it's animating, it skips directly to the end?
 static void AnimateBoard(uint8_t direction)
 {
   // Hide all sprites
@@ -927,14 +902,26 @@ const uint8_t rf_title[] PROGMEM = {
   0x80, 0xc6, 0x6e, 0x38, 0x38, 0xec, 0xc6, 0x00, // X
   0x80, 0x86, 0xcc, 0x78, 0x30, 0x1c, 0x0c, 0x00, // Y
   0x7c, 0xc0, 0x60, 0x10, 0x0c, 0xfe, 0x7c, 0x00, // Z
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x0c, // ,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, // .
-  0x3c, 0x42, 0x99, 0x85, 0x99, 0x42, 0x3c, 0x00, // (c)
-  0x7c, 0xc2, 0xc2, 0xc2, 0xe2, 0xfe, 0x7c, 0x00, // 0
-  0x7c, 0xe6, 0xc4, 0x60, 0x18, 0xfc, 0x7e, 0x00, // 2
-  0x3c, 0x62, 0x02, 0x7e, 0xc2, 0xfe, 0x7c, 0x00, // 6
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x0c, // ,    (use '[')
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x00, // .    (use '\\')
+  0x3c, 0x42, 0x99, 0x85, 0x99, 0x42, 0x3c, 0x00, // (c)  (use ']')
+  0x7c, 0xc2, 0xc2, 0xc2, 0xe2, 0xfe, 0x7c, 0x00, // 0    (use '^')
+  0x7c, 0xe6, 0xc4, 0x60, 0x18, 0xfc, 0x7e, 0x00, // 2    (use '_')
+  0x3c, 0x62, 0x02, 0x7e, 0xc2, 0xfe, 0x7c, 0x00, // 6    (use '`')
+                                                  // TILE_NUM_BACKGROUND (use 'a' - ASCII corresponding to RAM_TILES_COUNT + 'A')
 };
 
+// If RAM_TILES_COUNT is changed, the 'a' in the strings below need to change (see comment above)
+const char pgm_TITLE[] PROGMEM = "TILTaPUZZLE";
+const char pgm_UZEBOX_GAME[] PROGMEM = "UZEBOXaGAMEa]_^_`aMATTaPANDINA";
+const char pgm_INVENTED_BY1[] PROGMEM = "INVENTEDaBYaVESAaTIMONEN[";
+const char pgm_INVENTED_BY2[] PROGMEM = "TIMOaJOKITALO";
+const char pgm_START_GAME[] PROGMEM = "STARTaGAME";
+const char pgm_HOW_TO_PLAY[] PROGMEM = "HOWaTOaPLAY";
+const char pgm_FAIL[] PROGMEM = "FAIL";
+const char pgm_PASS[] PROGMEM = "PASS";
+
+// Generated using ~/uzebox/bin/bin2hex data/HELP.TXT (and terminating with a 0x00)
 const char HELP_TXT[] PROGMEM = {
   0x0a, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
   0x4f, 0x42, 0x4a, 0x45, 0x43, 0x54, 0x49, 0x56, 0x45, 0x0a, 0x0a, 0x20,
@@ -954,15 +941,6 @@ const char HELP_TXT[] PROGMEM = {
   0x45, 0x4e, 0x55, 0x20, 0x54, 0x4f, 0x20, 0x52, 0x45, 0x53, 0x45, 0x54,
   0x20, 0x54, 0x4f, 0x4b, 0x45, 0x4e, 0x53, 0x2e, 0x00
 };
-
-const char pgm_TITLE[] PROGMEM = "TILTaPUZZLE";
-const char pgm_UZEBOX_GAME[] PROGMEM = "UZEBOXaGAMEa]_^_`aMATTaPANDINA";
-const char pgm_INVENTED_BY1[] PROGMEM = "INVENTEDaBYaVESAaTIMONEN[";
-const char pgm_INVENTED_BY2[] PROGMEM = "TIMOaJOKITALO";
-const char pgm_START_GAME[] PROGMEM = "STARTaGAME";
-const char pgm_HOW_TO_PLAY[] PROGMEM = "HOWaTOaPLAY";
-const char pgm_FAIL[] PROGMEM = "FAIL";
-const char pgm_PASS[] PROGMEM = "PASS";
 
 // Loads 'len' compressed 'ramfont' tiles into user ram tiles starting at 'user_ram_tile_start' using 'fg_color' and 'bg_color'
 void RamFont_Load(const uint8_t* ramfont, uint8_t user_ram_tile_start, uint8_t len, uint8_t fg_color, uint8_t bg_color)
@@ -1027,6 +1005,7 @@ void RamFont_SparkleLoad(const uint8_t* ramfont, const uint8_t user_ram_tile_sta
   }
 }
 
+// This allows the use of PROGMEM char* strings, rather than a uint8_t array of bytes
 void RamFont_Print_Minus_A(uint8_t x, uint8_t y, const char* message, uint8_t len)
 {
   for (uint8_t i = 0; i < len; ++i) {
@@ -1036,7 +1015,9 @@ void RamFont_Print_Minus_A(uint8_t x, uint8_t y, const char* message, uint8_t le
   }
 }
 
-const uint8_t rf_popup[] PROGMEM = { // *RETUNSOKPZL
+// Compressed ram font data for other characters: *RETUNSOKPZL
+// run ramfont/main ramfont-popup.png to generate
+const uint8_t rf_popup[] PROGMEM = {
   0x00, 0x00, 0x18, 0x3c, 0x3c, 0x18, 0x00, 0x00,
   0x3e, 0x63, 0x61, 0x3f, 0x0d, 0x79, 0x71, 0x00,
   0x3e, 0x63, 0x01, 0x3f, 0x01, 0x7f, 0x7e, 0x00,
@@ -1050,25 +1031,7 @@ const uint8_t rf_popup[] PROGMEM = { // *RETUNSOKPZL
   0x3e, 0x60, 0x30, 0x08, 0x06, 0x7f, 0x3e, 0x00,
   0x02, 0x03, 0x01, 0x01, 0x41, 0x7f, 0x3e, 0x00,
 };
-/*
-// Compressed ram font data for other characters: *RESTCIUMNOK(LOCK_ICON)
-// run ramfont/main ramfont-popup.png to generate
-const uint8_t rf_popup[] PROGMEM = {
-  0x00, 0x00, 0x18, 0x3c, 0x3c, 0x18, 0x00, 0x00,
-  0x3e, 0x63, 0x61, 0x3f, 0x0d, 0x79, 0x71, 0x00,
-  0x3e, 0x63, 0x01, 0x3f, 0x01, 0x7f, 0x7e, 0x00,
-  0x1e, 0x31, 0x01, 0x3e, 0x60, 0x73, 0x3e, 0x00,
-  0x3e, 0x7f, 0x09, 0x08, 0x0c, 0x0c, 0x0c, 0x00,
-  0x3e, 0x63, 0x01, 0x01, 0x63, 0x7f, 0x3e, 0x00,
-  0x08, 0x18, 0x18, 0x18, 0x1c, 0x1c, 0x1c, 0x00,
-  0x20, 0x61, 0x61, 0x61, 0x73, 0x3f, 0x1e, 0x00,
-  0x31, 0x7b, 0x6f, 0x65, 0x61, 0x63, 0x23, 0x00,
-  0x23, 0x67, 0x6d, 0x79, 0x71, 0x63, 0x23, 0x00,
-  0x38, 0x66, 0x61, 0x61, 0x71, 0x7f, 0x3e, 0x00,
-  0x32, 0x1b, 0x0b, 0x1f, 0x3b, 0x73, 0x73, 0x00,
-  0x18, 0x24, 0x24, 0x7e, 0x56, 0x6a, 0x7e, 0x00,
-};
-*/
+
 // Compressed ram font data for popup border
 // run ramfont/main ramfont-popup-border.png to generate
 const uint8_t rf_popup_border[] PROGMEM = {
@@ -1096,59 +1059,6 @@ const uint8_t rf_digits[] PROGMEM = {
   0x7c, 0x66, 0x3c, 0x7c, 0xc6, 0xfe, 0x7c, 0x00,
   0x7c, 0xe2, 0xc2, 0xfc, 0xc0, 0xc2, 0x7c, 0x00,
 };
-
-void RamFont_Print(uint8_t x, uint8_t y, const uint8_t* message, uint8_t len)
-{
-  for (uint8_t i = 0; i < len; ++i) {
-    int8_t tileno = (int8_t)pgm_read_byte(&message[i]);
-    if (tileno >= 0)
-      SetRamTile(x + i, y, tileno);
-  }
-}
-
-uint8_t RamFont_GetLevelColor(uint8_t level)
-{
-  if ((level >= 1) && (level <= 10))
-    return 0x20; // TILE_GREEN
-  else if ((level >= 11) && (level <= 20))
-    return 0x2F; // TILE_YELLOW
-  else if ((level >= 21) && (level <= 30))
-    return 0xD0; // TILE_BLUE
-  else if ((level >= 31) && (level <= 40))
-    return 0x0E; // TILE_RED
-  return 0xFF;
-}
-
-void RamFont_Load2Digits(const uint8_t* ramfont, uint8_t ramfont_index, uint8_t number, uint8_t fg_color, uint8_t bg_color)
-{
-  uint8_t digits[2] = {0};
-  BCD_addConstant(digits, 2, number);
-
-  for (uint8_t tile = 0; tile < 2; ++tile) {
-    uint8_t* ramTile = GetUserRamTile(tile + ramfont_index);
-    for (uint8_t row = 0; row < 8; ++row) {
-      uint8_t rowstart = row * 8;
-      uint8_t data = (uint8_t)pgm_read_byte(&ramfont[digits[tile] * 8 + row]);
-      uint8_t bit = 0;
-      for (uint8_t bitmask = 1; bitmask != 0; bitmask <<= 1) {
-        if (data & bitmask)
-          ramTile[rowstart + bit] = fg_color;
-        else
-          ramTile[rowstart + bit] = bg_color;
-        ++bit;
-      }
-    }
-  }
-}
-
-void TileToRam(uint16_t toff, uint16_t roff, uint16_t len, const char* tiles, uint8_t* ramTile)
-{   // copy len number of tiles from tiles to ram tiles, use Abs below to give an absolute offset.
-   toff = toff << 6; // multiply by 64 to convert from ram tile index to actual address for pixel 0
-   roff = roff << 6;
-   len  = len << 6;
-   while (len--)
-     ramTile[roff++] = pgm_read_byte(tiles + toff++);
-}
 
 // Defines for the ram fonts used in the popup menu // *RETUNSOKPZL
 #define RF_ASTERISK (GAME_USER_RAM_TILES_COUNT)
@@ -1192,8 +1102,60 @@ const uint8_t pgm_P_PUZZLE[] PROGMEM        = { RF_P, RF_U, RF_Z, RF_Z, RF_L, RF
 const uint8_t pgm_P_MUSIC[] PROGMEM          = { RF_M, RF_U, RF_S, RF_I, RF_C };
 const uint8_t pgm_P_SLIDER_ON[] PROGMEM       = { RF_SLIDER_ON_L, RF_SLIDER_ON_R };
 */
-#define TILE_DPAD_LEFT 16
-#define TILE_DPAD_RIGHT 17
+
+
+void RamFont_Print(uint8_t x, uint8_t y, const uint8_t* message, uint8_t len)
+{
+  for (uint8_t i = 0; i < len; ++i) {
+    int8_t tileno = (int8_t)pgm_read_byte(&message[i]);
+    if (tileno >= 0)
+      SetRamTile(x + i, y, tileno);
+  }
+}
+
+uint8_t RamFont_GetLevelColor(uint8_t level)
+{
+  if ((level >= 1) && (level <= 10))
+    return 0x20; // TILE_NUM_GREEN
+  else if ((level >= 11) && (level <= 20))
+    return 0x2F; // TILE_NUM_YELLOW
+  else if ((level >= 21) && (level <= 30))
+    return 0xD0; // TILE_NUM_BLUE
+  else if ((level >= 31) && (level <= 40))
+    return 0x0E; // TILE_NUM_RED
+  return 0xFF;
+}
+
+void RamFont_Load2Digits(const uint8_t* ramfont, uint8_t ramfont_index, uint8_t number, uint8_t fg_color, uint8_t bg_color)
+{
+  uint8_t digits[2] = {0};
+  BCD_addConstant(digits, 2, number);
+
+  for (uint8_t tile = 0; tile < 2; ++tile) {
+    uint8_t* ramTile = GetUserRamTile(tile + ramfont_index);
+    for (uint8_t row = 0; row < 8; ++row) {
+      uint8_t rowstart = row * 8;
+      uint8_t data = (uint8_t)pgm_read_byte(&ramfont[digits[tile] * 8 + row]);
+      uint8_t bit = 0;
+      for (uint8_t bitmask = 1; bitmask != 0; bitmask <<= 1) {
+        if (data & bitmask)
+          ramTile[rowstart + bit] = fg_color;
+        else
+          ramTile[rowstart + bit] = bg_color;
+        ++bit;
+      }
+    }
+  }
+}
+
+void TileToRam(uint16_t toff, uint16_t roff, uint16_t len, const char* tiles, uint8_t* ramTile)
+{   // copy len number of tiles from tiles to ram tiles, use Abs below to give an absolute offset.
+   toff = toff << 6; // multiply by 64 to convert from ram tile index to actual address for pixel 0
+   roff = roff << 6;
+   len  = len << 6;
+   while (len--)
+     ramTile[roff++] = pgm_read_byte(tiles + toff++);
+}
 
 int main()
 {
@@ -1226,7 +1188,7 @@ int main()
     int8_t prev_selection;
     int8_t selection = 0;
 
-#define TILE_T_BG 0
+#define TITLE_T_BACKGROUND 0
 #define TILE_T_SELECTION 1
 
     for (;;) {
@@ -1248,7 +1210,7 @@ int main()
         if (selection > 0) {
           selection--;
           TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
-          SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
+          SetTile(9, 14 + 2 * prev_selection, TITLE_T_BACKGROUND);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
         }
@@ -1256,7 +1218,7 @@ int main()
         if (selection < 1) {
           selection++;
           TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
-          SetTile(9, 14 + 2 * prev_selection, TILE_T_BG);
+          SetTile(9, 14 + 2 * prev_selection, TITLE_T_BACKGROUND);
           SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
           prev_selection = selection;
         }
@@ -1419,7 +1381,7 @@ int main()
 #define MENU_HEIGHT 5
 #define MENU_START_X 7
 #define MENU_START_Y 12
-#define TILE_MENU_BG TILE_BACKGROUND
+#define TILE_MENU_BG TILE_NUM_BACKGROUND
       /*
       // Hide all the overlay sprites
       for (uint8_t i = OVERLAY_SPRITE_START; i < MAX_SPRITES - 1; ++i)
@@ -1550,8 +1512,8 @@ int main()
           }
         }
         if (selection == 2) {
-          SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_DPAD_LEFT);
-          SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_DPAD_RIGHT);
+          SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_NUM_DPAD_LEFT);
+          SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_NUM_DPAD_RIGHT);
         }
 
         if ((selection == 2) && ((buttons.pressed & BTN_LEFT) || (buttons.pressed & BTN_RIGHT))) {
@@ -1566,7 +1528,7 @@ int main()
             if (!BitArray_readBit(selectedLevel))
               SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
               else*/
-              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_BACKGROUND);
+              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_NUM_BACKGROUND);
 
             TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
           } else if (buttons.pressed & BTN_RIGHT) {
@@ -1579,7 +1541,7 @@ int main()
             /*if (!BitArray_readBit(selectedLevel))
               SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
               else*/
-              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_BACKGROUND);
+              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_NUM_BACKGROUND);
 
             TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
           }
@@ -1588,10 +1550,10 @@ int main()
         if (selection == 3) {
           if (IsSongPlaying()) {
             SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_MENU_BG);
-            SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_DPAD_LEFT);
+            SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_NUM_DPAD_LEFT);
           } else {
             SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_MENU_BG);
-            SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_DPAD_RIGHT);
+            SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_NUM_DPAD_RIGHT);
           }
         }
 
@@ -1634,7 +1596,6 @@ int main()
           SetTile(MENU_START_X + x, MENU_START_Y + y, backing[y][x]);
 
       TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
-      //BB_triggerFx(7);
 
       if (confirmed && selection == 1)
         LoadLevel(currentLevel);
