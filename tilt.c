@@ -33,7 +33,6 @@
 #include "data/titlescreen.inc"
 #include "data/tileset.inc"
 #include "data/patches.inc"
-//#include "data/midisong.h"
 #include "levels.h"
 
 typedef struct {
@@ -263,8 +262,6 @@ struct MOVE_INFO {
 
   // Animation stuff
   bool doneMoving;
-
-  // Should be able to reduce this to just position and velocity
   int16_t x;
   int16_t y;
   int16_t dx;
@@ -480,124 +477,6 @@ static void UpdateBoardAfterMove()
     youWin = true;
 }
 
-#if 0
-static void SameTimeAnimation()
-{
-  WaitVsync(1);
-  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-    if (moveInfo[move].piece == 0)
-      break;
-    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
-    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
-    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
-    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
-    uint16_t x4_8 = (xStart + xEnd) / 2;
-    uint16_t y4_8 = (yStart + yEnd) / 2;
-    uint16_t x2_8 = (xStart + x4_8) / 2;
-    uint16_t y2_8 = (yStart + y4_8) / 2;
-    uint16_t x1_8 = (xStart + x2_8) / 2;
-    uint16_t y1_8 = (yStart + y2_8) / 2;
-    MoveSprite(move * 4, x1_8, y1_8, 2, 2);
-  }
-
-  WaitVsync(1);
-  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-    if (moveInfo[move].piece == 0)
-      break;
-    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
-    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
-    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
-    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
-    uint16_t x4_8 = (xStart + xEnd) / 2;
-    uint16_t y4_8 = (yStart + yEnd) / 2;
-    uint16_t x2_8 = (xStart + x4_8) / 2;
-    uint16_t y2_8 = (yStart + y4_8) / 2;
-    MoveSprite(move * 4, x2_8, y2_8, 2, 2);
-  }
-
-  WaitVsync(1);
-  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-    if (moveInfo[move].piece == 0)
-      break;
-    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
-    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
-    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
-    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
-    uint16_t x4_8 = (xStart + xEnd) / 2;
-    uint16_t y4_8 = (yStart + yEnd) / 2;
-    uint16_t x2_8 = (xStart + x4_8) / 2;
-    uint16_t y2_8 = (yStart + y4_8) / 2;
-    uint16_t x3_8 = (x2_8 + x4_8) / 2;
-    uint16_t y3_8 = (y2_8 + y4_8) / 2;
-    MoveSprite(move * 4, x3_8, y3_8, 2, 2);
-  }
-
-  WaitVsync(1);
-  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-    if (moveInfo[move].piece == 0)
-      break;
-    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
-    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
-    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
-    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
-    uint16_t x4_8 = (xStart + xEnd) / 2;
-    uint16_t y4_8 = (yStart + yEnd) / 2;
-    MoveSprite(move * 4, x4_8, y4_8, 2, 2);
-  }
-
-  WaitVsync(1);
-  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-    if (moveInfo[move].piece == 0)
-      break;
-    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
-    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
-    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
-    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
-    uint16_t x4_8 = (xStart + xEnd) / 2;
-    uint16_t y4_8 = (yStart + yEnd) / 2;
-    uint16_t x6_8 = (x4_8 + xEnd) / 2;
-    uint16_t y6_8 = (y4_8 + yEnd) / 2;
-    uint16_t x5_8 = (x4_8 + x6_8) / 2;
-    uint16_t y5_8 = (y4_8 + y6_8) / 2;
-    MoveSprite(move * 4, x5_8, y5_8, 2, 2);
-  }
-
-  WaitVsync(1);
-  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-    if (moveInfo[move].piece == 0)
-      break;
-    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
-    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
-    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
-    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
-    uint16_t x4_8 = (xStart + xEnd) / 2;
-    uint16_t y4_8 = (yStart + yEnd) / 2;
-    uint16_t x6_8 = (x4_8 + xEnd) / 2;
-    uint16_t y6_8 = (y4_8 + yEnd) / 2;
-    MoveSprite(move * 4, x6_8, y6_8, 2, 2);
-  }
-
-  WaitVsync(1);
-  for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
-    if (moveInfo[move].piece == 0)
-      break;
-    uint16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
-    uint16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
-    uint16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
-    uint16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
-    uint16_t x4_8 = (xStart + xEnd) / 2;
-    uint16_t y4_8 = (yStart + yEnd) / 2;
-    uint16_t x6_8 = (x4_8 + xEnd) / 2;
-    uint16_t y6_8 = (y4_8 + yEnd) / 2;
-    uint16_t x7_8 = (x6_8 + xEnd) / 2;
-    uint16_t y7_8 = (y6_8 + yEnd) / 2;
-    MoveSprite(move * 4, x7_8, y7_8, 2, 2);
-  }
-
-  WaitVsync(1);
-}
-#endif
-
 #define NEAREST_SCREEN_PIXEL(p)  (((p) + (1 << (FP_SHIFT - 1))) >> FP_SHIFT)
 
 #define FP_SHIFT                    (2)
@@ -633,13 +512,8 @@ static void UpdatePhysicsLeft()
           playFellDownHoleSound = true;
       }
       moveInfo[move].doneMoving = true;
-      if (moveInfo[move].fellDownHole) {
+      if (moveInfo[move].fellDownHole)
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
-        /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
-          playedYouLoseSound = true;
-          TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
-          }*/
-      }
     }
   }
 }
@@ -671,13 +545,8 @@ static void UpdatePhysicsUp()
           playFellDownHoleSound = true;
       }
       moveInfo[move].doneMoving = true;
-      if (moveInfo[move].fellDownHole) {
+      if (moveInfo[move].fellDownHole)
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
-        /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
-          playedYouLoseSound = true;
-          TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
-          }*/
-      }
     }
   }
 }
@@ -709,13 +578,8 @@ static void UpdatePhysicsRight()
           playFellDownHoleSound = true;
       }
       moveInfo[move].doneMoving = true;
-      if (moveInfo[move].fellDownHole) {
+      if (moveInfo[move].fellDownHole)
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
-        /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
-          playedYouLoseSound = true;
-          TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
-          }*/
-      }
     }
   }
 }
@@ -747,13 +611,8 @@ static void UpdatePhysicsDown()
           playFellDownHoleSound = true;
       }
       moveInfo[move].doneMoving = true;
-      if (moveInfo[move].fellDownHole) {
+      if (moveInfo[move].fellDownHole)
         MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
-        /*if (moveInfo[move].piece == B && !playedYouLoseSound) {
-          playedYouLoseSound = true;
-          TriggerNote(SFX_CHANNEL, SFX_ZAP, SFX_SPEED_ZAP, SFX_VOL_ZAP);
-          }*/
-      }
     }
   }
 }
@@ -795,7 +654,6 @@ static void GravityAnimation(uint8_t direction)
     UpdatePhysics(direction);
     if (numSlidersHitEndStops > 0)
       TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP + 24 * numSlidersHitEndStops);
-      //TriggerFx(FX_THUD, 80, true);
 
     if (playFellDownHoleSound)
       TriggerNote(SFX_CHANNEL, SFX_SLIDER_HOLE, SFX_SPEED_SLIDER_HOLE, SFX_VOL_SLIDER_HOLE + 24 * 5);
@@ -840,7 +698,6 @@ static void AnimateBoard(uint8_t direction)
   }
 
   // Animate them
-  //SameTimeAnimation();
   GravityAnimation(direction);
 
   for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
@@ -1074,8 +931,6 @@ const uint8_t rf_digits[] PROGMEM = {
 #define RF_Z (GAME_USER_RAM_TILES_COUNT + 10)
 #define RF_L (GAME_USER_RAM_TILES_COUNT + 11)
 
-//#define RF_UNSOLVED (GAME_USER_RAM_TILES_COUNT + 12)
-
 #define RF_B_TL (GAME_USER_RAM_TILES_COUNT + 12)
 #define RF_B_T (GAME_USER_RAM_TILES_COUNT + 13)
 #define RF_B_TR (GAME_USER_RAM_TILES_COUNT + 14)
@@ -1088,21 +943,9 @@ const uint8_t rf_digits[] PROGMEM = {
 #define RF_OnesPlace (GAME_USER_RAM_TILES_COUNT + 20)
 #define RF_TensPlace (GAME_USER_RAM_TILES_COUNT + 21)
 
-/*
-#define RF_SLIDER_ON_L (GAME_USER_RAM_TILES_COUNT + 23)
-#define RF_SLIDER_ON_R (GAME_USER_RAM_TILES_COUNT + 24)
-
-#define SPRITE_INDEX_SLIDER_ON 5
-#define SPRITE_INDEX_SLIDER_OFF 7
-*/
 const uint8_t pgm_P_RETURN[] PROGMEM         = { RF_R, RF_E, RF_T, RF_U, RF_R, RF_N };
 const uint8_t pgm_P_RESET_TOKENS[] PROGMEM   = { RF_R, RF_E, RF_S, RF_E, RF_T, RAM_TILES_COUNT, RF_T, RF_O, RF_K, RF_E, RF_N, RF_S };
 const uint8_t pgm_P_PUZZLE[] PROGMEM        = { RF_P, RF_U, RF_Z, RF_Z, RF_L, RF_E };
-/*
-const uint8_t pgm_P_MUSIC[] PROGMEM          = { RF_M, RF_U, RF_S, RF_I, RF_C };
-const uint8_t pgm_P_SLIDER_ON[] PROGMEM       = { RF_SLIDER_ON_L, RF_SLIDER_ON_R };
-*/
-
 
 void RamFont_Print(uint8_t x, uint8_t y, const uint8_t* message, uint8_t len)
 {
@@ -1166,8 +1009,6 @@ int main()
   memset(&buttons, 0, sizeof(BUTTON_INFO));
 
   InitMusicPlayer(patches);
-  //StartSong(midisong);
-  //StopSong();
 
  title_screen:
   ClearVram();
@@ -1177,7 +1018,7 @@ int main()
   SetUserRamTilesCount(RAM_TILES_COUNT);
   RamFont_Load(rf_title, 0, sizeof(rf_title) / 8, 0xFF, 0x00);
 
-  WaitVsync(1);
+  WaitVsync(1); // This avoids tearing during VSYNC when drawing the logo after loading RAM fonts
 
   DrawMap(4, 2, map_logo);
   RamFont_Print_Minus_A(11, 14, pgm_START_GAME, sizeof(pgm_START_GAME) - 1);
@@ -1303,8 +1144,6 @@ int main()
   SetSpritesTileBank(0, tileset);
   SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
 
-  //ResumeSong();
-
   currentLevel = 1;
   LoadLevel(currentLevel);
 
@@ -1317,7 +1156,6 @@ int main()
     buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
     buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
 
-    // Beat Level 32
     if (buttons.pressed == BTN_LEFT) {
       TiltBoardLeft();
       UpdateBoardAfterMove();
@@ -1357,7 +1195,7 @@ int main()
         if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
             (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
 
-          // Erase Win/Lose message
+          // Erase PASS/FAIL message
           for (uint8_t i = 0; i < sizeof(pgm_FAIL) - 1; ++i)
             SetTile(14 + i, 23, 0);
 
@@ -1374,245 +1212,175 @@ int main()
         }
       }
     } else {
-
-    // -------------------- PROCESS POPUP MENU --------------------
-    // If we pressed the START button with no other buttons held down
-    if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
-        (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
+      // -------------------- PROCESS POPUP MENU --------------------
+      // If we pressed the START button with no other buttons held down
+      if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
+          (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
 #define MENU_WIDTH 18
 #define MENU_HEIGHT 5
 #define MENU_START_X 7
 #define MENU_START_Y 12
 #define TILE_MENU_BG TILE_NUM_BACKGROUND
-      /*
-      // Hide all the overlay sprites
-      for (uint8_t i = OVERLAY_SPRITE_START; i < MAX_SPRITES - 1; ++i)
-        sprites[i].flags |= SPRITE_OFF;
-      */
-      // Play a sound effect that indicates the popup menu, unfortunately if music is playing, a TriggerFx won't work
-      TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
 
-      // save what is behind the popup menu
-      uint8_t backing[MENU_HEIGHT][MENU_WIDTH];
-      for (uint8_t y = 0; y < MENU_HEIGHT; ++y)
-        for (uint8_t x = 0; x < MENU_WIDTH; ++x)
-          backing[y][x] = GetTile(MENU_START_X + x, MENU_START_Y + y);
+        // Play a sound effect that indicates the popup menu, unfortunately if music is playing, a TriggerFx won't work
+        TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
 
-      // Put all the stuff we'll need to display for the menu into user ram tiles
-      // Reserve some extra tiles, but keep the sprites that are displaying the current level visible
-      // By reserving all the tiles but two, it keeps the overlay sprites from showing through the popup menu
+        // Save what is behind the popup menu
+        uint8_t backing[MENU_HEIGHT][MENU_WIDTH];
+        for (uint8_t y = 0; y < MENU_HEIGHT; ++y)
+          for (uint8_t x = 0; x < MENU_WIDTH; ++x)
+            backing[y][x] = GetTile(MENU_START_X + x, MENU_START_Y + y);
 
-      WaitVsync(1); // Ensures the sprites have a chance to hide before we reuse their ram tiles, avoiding glitches
-      SetUserRamTilesCount(RAM_TILES_COUNT);
+        // Put all the stuff we'll need to display for the menu into user ram tiles
 
-      // Load the popup menu into ram tiles starting at 0
-      uint8_t rf_popup_len = sizeof(rf_popup) / 8;
-      RamFont_Load(rf_popup, GAME_USER_RAM_TILES_COUNT, rf_popup_len, 0xFF, 0x00);
+        WaitVsync(1); // Ensures any sprites have a chance to hide before we reuse their ram tiles, avoiding glitches
+        SetUserRamTilesCount(RAM_TILES_COUNT);
 
-      // load the popup menu border after that (starting at the user ram tile: rf_popup_len) with a different fg color
-      uint8_t rf_popup_border_len = sizeof(rf_popup_border) / 8;
-      RamFont_Load(rf_popup_border, GAME_USER_RAM_TILES_COUNT + rf_popup_len, rf_popup_border_len, 0xA4, 0x00);
+        // Load the popup menu into ram tiles starting at 0
+        uint8_t rf_popup_len = sizeof(rf_popup) / 8;
+        RamFont_Load(rf_popup, GAME_USER_RAM_TILES_COUNT, rf_popup_len, 0xFF, 0x00);
 
-      // Make the top right and bottom left pixels of the border "transparent"
-      uint8_t bgTile;
-      char bgTilePixel;
-      uint8_t* ramTile;
+        // Load the popup menu border after that (starting at the user ram tile: rf_popup_len) with a different fg color
+        uint8_t rf_popup_border_len = sizeof(rf_popup_border) / 8;
+        RamFont_Load(rf_popup_border, GAME_USER_RAM_TILES_COUNT + rf_popup_len, rf_popup_border_len, 0xA4, 0x00);
 
-      bgTile = GetTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y);
-      bgTilePixel = pgm_read_byte(tileset + bgTile * 64 + 7); // 7 is top right pixel
-      ramTile = GetUserRamTile(RF_B_TR); // top right corner in rf_popup
-      ramTile[7] = bgTilePixel; // top right pixel of ramTile
+        // Make the top right and bottom left pixels of the border "transparent"
+        uint8_t bgTile;
+        char bgTilePixel;
+        uint8_t* ramTile;
 
-      bgTile = GetTile(MENU_START_X, MENU_START_Y + MENU_HEIGHT - 1);
-      bgTilePixel = pgm_read_byte(tileset + bgTile * 64 + 56); // 56 is bottom left pixel
-      ramTile = GetUserRamTile(RF_B_BL); // bottom left corner in rf_popup
-      ramTile[56] = bgTilePixel; // bottom left pixel of ramTile
+        bgTile = GetTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y);
+        bgTilePixel = pgm_read_byte(tileset + bgTile * 64 + 7); // 7 is top right pixel
+        ramTile = GetUserRamTile(RF_B_TR); // top right corner in rf_popup
+        ramTile[7] = bgTilePixel; // top right pixel of ramTile
 
-      // Draw the current level number in the color corresponding to its difficulty
-      RamFont_Load2Digits(rf_digits, GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len, currentLevel, RamFont_GetLevelColor(currentLevel), 0x00);
-      //TileToRam(SPRITE_INDEX_SLIDER_ON, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
+        bgTile = GetTile(MENU_START_X, MENU_START_Y + MENU_HEIGHT - 1);
+        bgTilePixel = pgm_read_byte(tileset + bgTile * 64 + 56); // 56 is bottom left pixel
+        ramTile = GetUserRamTile(RF_B_BL); // bottom left corner in rf_popup
+        ramTile[56] = bgTilePixel; // bottom left pixel of ramTile
 
-      // Draw the menu background
-      Fill(MENU_START_X + 1, MENU_START_Y + 1, MENU_WIDTH - 2, MENU_HEIGHT - 2, TILE_MENU_BG);
-      SetRamTile(MENU_START_X, MENU_START_Y, RF_B_TL);
-      for (uint8_t i = MENU_START_X + 1; i < MENU_START_X + MENU_WIDTH - 1; ++i)
-        SetRamTile(i, MENU_START_Y, RF_B_T);
-      SetRamTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y, RF_B_TR);
-      for (uint8_t i = MENU_START_Y + 1; i < MENU_START_Y + MENU_HEIGHT - 1; ++i) {
-        SetRamTile(MENU_START_X, i, RF_B_L);
-        SetRamTile(MENU_START_X + MENU_WIDTH - 1, i, RF_B_R);
-      }
-      SetRamTile(MENU_START_X, MENU_START_Y + MENU_HEIGHT - 1, RF_B_BL);
-      for (uint8_t i = MENU_START_X + 1; i < MENU_START_X + MENU_WIDTH - 1; ++i)
-        SetRamTile(i, MENU_START_Y + MENU_HEIGHT - 1, RF_B_B);
-      SetRamTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y + MENU_HEIGHT - 1, RF_B_BR);
+        // Draw the current level number in the color corresponding to its difficulty
+        RamFont_Load2Digits(rf_digits,
+                            GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len,
+                            currentLevel, RamFont_GetLevelColor(currentLevel), 0x00);
 
-      RamFont_Print(MENU_START_X + 5, MENU_START_Y + 1, pgm_P_RETURN, sizeof(pgm_P_RETURN));
-      RamFont_Print(MENU_START_X + 5, MENU_START_Y + 2, pgm_P_RESET_TOKENS, sizeof(pgm_P_RESET_TOKENS));
-      RamFont_Print(MENU_START_X + 5, MENU_START_Y + 3, pgm_P_PUZZLE, sizeof(pgm_P_PUZZLE));
-      //RamFont_Print(MENU_START_X + 5, MENU_START_Y + 4, pgm_P_MUSIC, sizeof(pgm_P_MUSIC));
-
-      SetRamTile(MENU_START_X + 5 + 8, MENU_START_Y + 3, RF_OnesPlace);
-      SetRamTile(MENU_START_X + 5 + 7, MENU_START_Y + 3, RF_TensPlace);
-      /*
-      if (!BitArray_readBit(currentLevel))
-        SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
-      */
-      /*
-      if (IsSongPlaying()) {
-        // if we needed multiple sliders in the same menu, you wouldn't want to use TileToRam, instead you'd want
-        // to have both the on and off states of the slider loaded into different ram tiles at the same time
-        TileToRam(SPRITE_INDEX_SLIDER_ON, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
-        //RamFont_Print(MENU_START_X + 6 + 6, MENU_START_Y + 5, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON);
-      } else {
-        TileToRam(SPRITE_INDEX_SLIDER_OFF, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
-        //RamFont_Print(MENU_START_X + 6 + 6, MENU_START_Y + 5, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON));
-      }
-      RamFont_Print(MENU_START_X + 5 + 6, MENU_START_Y + 4, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON));
-      */
-      int8_t prev_selection;
-      int8_t selection = 0;
-      bool confirmed = false;
-
-      uint8_t selectedLevel = currentLevel;
-
-      // The popup menu has its own run loop
-      for (;;) {
-
-        SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
-        prev_selection = selection;
-
-        // Read the current state of the player's controller
-        buttons.prev = buttons.held;
-        buttons.held = ReadJoypad(0);
-        buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
-        buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
-
-        if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
-            (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
-          confirmed = true;
-          break;
+        // Draw the menu background
+        Fill(MENU_START_X + 1, MENU_START_Y + 1, MENU_WIDTH - 2, MENU_HEIGHT - 2, TILE_MENU_BG);
+        SetRamTile(MENU_START_X, MENU_START_Y, RF_B_TL);
+        for (uint8_t i = MENU_START_X + 1; i < MENU_START_X + MENU_WIDTH - 1; ++i)
+          SetRamTile(i, MENU_START_Y, RF_B_T);
+        SetRamTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y, RF_B_TR);
+        for (uint8_t i = MENU_START_Y + 1; i < MENU_START_Y + MENU_HEIGHT - 1; ++i) {
+          SetRamTile(MENU_START_X, i, RF_B_L);
+          SetRamTile(MENU_START_X + MENU_WIDTH - 1, i, RF_B_R);
         }
+        SetRamTile(MENU_START_X, MENU_START_Y + MENU_HEIGHT - 1, RF_B_BL);
+        for (uint8_t i = MENU_START_X + 1; i < MENU_START_X + MENU_WIDTH - 1; ++i)
+          SetRamTile(i, MENU_START_Y + MENU_HEIGHT - 1, RF_B_B);
+        SetRamTile(MENU_START_X + MENU_WIDTH - 1, MENU_START_Y + MENU_HEIGHT - 1, RF_B_BR);
 
-        if (buttons.pressed & BTN_UP) {
-          if (selection > 0) {
-            selection--;
-            TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
-            for (uint8_t x = MENU_START_X + 1; x <= MENU_START_X + 3; ++x)
-              SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_MENU_BG);
-            SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
-            prev_selection = selection;
+        RamFont_Print(MENU_START_X + 5, MENU_START_Y + 1, pgm_P_RETURN, sizeof(pgm_P_RETURN));
+        RamFont_Print(MENU_START_X + 5, MENU_START_Y + 2, pgm_P_RESET_TOKENS, sizeof(pgm_P_RESET_TOKENS));
+        RamFont_Print(MENU_START_X + 5, MENU_START_Y + 3, pgm_P_PUZZLE, sizeof(pgm_P_PUZZLE));
+
+        SetRamTile(MENU_START_X + 5 + 8, MENU_START_Y + 3, RF_OnesPlace);
+        SetRamTile(MENU_START_X + 5 + 7, MENU_START_Y + 3, RF_TensPlace);
+
+        int8_t prev_selection;
+        int8_t selection = 0;
+        bool confirmed = false;
+        uint8_t selectedLevel = currentLevel;
+
+        // The popup menu has its own run loop
+        for (;;) {
+          SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
+          prev_selection = selection;
+
+          // Read the current state of the player's controller
+          buttons.prev = buttons.held;
+          buttons.held = ReadJoypad(0);
+          buttons.pressed = buttons.held & (buttons.held ^ buttons.prev);
+          buttons.released = buttons.prev & (buttons.held ^ buttons.prev);
+
+          if ((buttons.pressed & BTN_START && buttons.held == BTN_START) ||
+              (buttons.pressed & BTN_A && buttons.held == BTN_A)) {
+            confirmed = true;
+            break;
           }
-        } else if (buttons.pressed & BTN_DOWN) {
-          if (selection < 2) {
-            selection++;
-            TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
-            for (uint8_t x = MENU_START_X + 1; x <= MENU_START_X + 3; ++x)
-              SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_MENU_BG);
-            SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
-            prev_selection = selection;
-          }
-        }
-        if (selection == 2) {
-          SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_NUM_DPAD_LEFT);
-          SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_NUM_DPAD_RIGHT);
-        }
 
-        if ((selection == 2) && ((buttons.pressed & BTN_LEFT) || (buttons.pressed & BTN_RIGHT))) {
-          if (buttons.pressed & BTN_LEFT) {
-            if (selectedLevel > 1) {
-              selectedLevel--;
-            } else {
-              selectedLevel = 40;
+          if (buttons.pressed & BTN_UP) {
+            if (selection > 0) {
+              selection--;
+              TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+              for (uint8_t x = MENU_START_X + 1; x <= MENU_START_X + 3; ++x)
+                SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_MENU_BG);
+              SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
+              prev_selection = selection;
             }
-            RamFont_Load2Digits(rf_digits, GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len, selectedLevel, RamFont_GetLevelColor(selectedLevel), 0x00);
-            /*
-            if (!BitArray_readBit(selectedLevel))
-              SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
-              else*/
-              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_NUM_BACKGROUND);
-
-            TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
-          } else if (buttons.pressed & BTN_RIGHT) {
-            if (selectedLevel < 40) {
-              selectedLevel++;
-            } else {
-              selectedLevel = 1;
+          } else if (buttons.pressed & BTN_DOWN) {
+            if (selection < 2) {
+              selection++;
+              TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+              for (uint8_t x = MENU_START_X + 1; x <= MENU_START_X + 3; ++x)
+                SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_MENU_BG);
+              SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
+              prev_selection = selection;
             }
-            RamFont_Load2Digits(rf_digits, GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len, selectedLevel, RamFont_GetLevelColor(selectedLevel), 0x00);
-            /*if (!BitArray_readBit(selectedLevel))
-              SetRamTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, RF_UNSOLVED);
-              else*/
-              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_NUM_BACKGROUND);
-
-            TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
           }
-        }
-        /*
-        if (selection == 3) {
-          if (IsSongPlaying()) {
-            SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_MENU_BG);
+          if (selection == 2) {
             SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_NUM_DPAD_LEFT);
-          } else {
-            SetTile(MENU_START_X + 1, MENU_START_Y + 1 + selection, TILE_MENU_BG);
             SetTile(MENU_START_X + 3, MENU_START_Y + 1 + selection, TILE_NUM_DPAD_RIGHT);
           }
-        }
 
-        if ((selection == 3) && ((buttons.pressed & BTN_LEFT) || (buttons.pressed & BTN_RIGHT))) {
-          if ((buttons.pressed & BTN_LEFT) && IsSongPlaying()) {
-            TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
-            TileToRam(SPRITE_INDEX_SLIDER_OFF, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
-            //RamFont_Print(MENU_START_X + 6 + 6, MENU_START_Y + 2 + selection, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON));
-            StopSong();
-          } else if ((buttons.pressed & BTN_RIGHT) && !IsSongPlaying()) {
-            TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
-            TileToRam(SPRITE_INDEX_SLIDER_ON, 0, 2, tileset, GetUserRamTile(RF_SLIDER_ON_L));
-            //RamFont_Print(MENU_START_X + 6 + 6, MENU_START_Y + 2 + selection, pgm_P_SLIDER_ON, sizeof(pgm_P_SLIDER_ON));
-            ResumeSong();
+          if ((selection == 2) && ((buttons.pressed & BTN_LEFT) || (buttons.pressed & BTN_RIGHT))) {
+            if (buttons.pressed & BTN_LEFT) {
+              if (selectedLevel > 1)
+                selectedLevel--;
+              else
+                selectedLevel = 40;
+
+              RamFont_Load2Digits(rf_digits,
+                                  GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len,
+                                  selectedLevel, RamFont_GetLevelColor(selectedLevel), 0x00);
+
+              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_NUM_BACKGROUND); // Not strictly necessary, a vestage
+              TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
+            } else if (buttons.pressed & BTN_RIGHT) {
+              if (selectedLevel < 40)
+                selectedLevel++;
+              else
+                selectedLevel = 1;
+
+              RamFont_Load2Digits(rf_digits,
+                                  GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len,
+                                  selectedLevel, RamFont_GetLevelColor(selectedLevel), 0x00);
+
+              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_NUM_BACKGROUND); // Not strictly necessary, a vestage
+              TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+            }
           }
-        }
-        */
-        WaitVsync(1);
-      }
-      /*
-#if defined(OPTION_PERSIST_MUSIC_PREF)
-      if (IsSongPlaying()) {
-        if (BitArray_readBit(0)) {
-          BitArray_clearBit(0);
-          SaveHighScore(bitarray);
-        }
-      } else {
-        if (!BitArray_readBit(0)) {
-          BitArray_setBit(0);
-          SaveHighScore(bitarray);
-        }
-      }
-#endif
-      */
-      SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
 
-      // restore what was behind the popup menu
-      for (uint8_t y = 0; y < MENU_HEIGHT; ++y)
-        for (uint8_t x = 0; x < MENU_WIDTH; ++x)
-          SetTile(MENU_START_X + x, MENU_START_Y + y, backing[y][x]);
+          WaitVsync(1);
+        }
 
-      TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+        SetUserRamTilesCount(GAME_USER_RAM_TILES_COUNT);
 
-      if (confirmed && selection == 1)
-        LoadLevel(currentLevel);
-      else if (confirmed && selectedLevel != currentLevel) {
-        currentLevel = selectedLevel;
-        LoadLevel(currentLevel);
+        // Restore what was behind the popup menu
+        for (uint8_t y = 0; y < MENU_HEIGHT; ++y)
+          for (uint8_t x = 0; x < MENU_WIDTH; ++x)
+            SetTile(MENU_START_X + x, MENU_START_Y + y, backing[y][x]);
+
+        TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
+
+        if (confirmed && selection == 1)
+          LoadLevel(currentLevel);
+        else if (confirmed && selectedLevel != currentLevel) {
+          currentLevel = selectedLevel;
+          LoadLevel(currentLevel);
+        }
       }
-      /*
-      // Show all the overlay sprites
-      for (uint8_t i = OVERLAY_SPRITE_START; i < MAX_SPRITES - 1; ++i)
-        sprites[i].flags &= (sprites[i].flags ^ SPRITE_OFF);
-      */
+      // -------------------- END PROCESS POPUP MENU --------------------
     }
-    // ----------------------------------------
-    } // else win/lose
 
   }
 }
