@@ -68,7 +68,6 @@ typedef struct {
 uint8_t currentLevel;
 bool youWin;
 bool youLose;
-bool playedYouLoseSound;
 
 // How many pieces hit their end stops this frame (affect whether the sfx plays and its volume)
 uint8_t numSlidersHitEndStops;
@@ -83,8 +82,28 @@ uint8_t board[BOARD_HEIGHT][BOARD_WIDTH] = {
   {  0,  0,  0,  0,  0 },
 };
 
+typedef struct {
+  // Board state for a given tilt
+  uint8_t piece; // G or B
+  uint8_t xStart;
+  uint8_t yStart;
+  uint8_t xEnd;
+  uint8_t yEnd;
+  bool fellDownHole;
+
+  // Animation stuff
+  bool doneMoving;
+  int16_t x;
+  int16_t y;
+  int16_t dx;
+  int16_t dy;
+} __attribute__ ((packed)) MOVE_INFO;
+
+#define MAX_MOVABLE_PIECES 5
+MOVE_INFO moveInfo[MAX_MOVABLE_PIECES];
+
 // Each piece has a different tile map if it partially overlaps with the hole in the center of the board
-const VRAM_PTR_TYPE* MapPieceToTileMapForBoardPosition(uint8_t piece, uint8_t x, uint8_t y) {
+static const VRAM_PTR_TYPE* MapPieceToTileMapForBoardPosition(uint8_t piece, uint8_t x, uint8_t y) {
   const VRAM_PTR_TYPE* map_piece = map_stopper;
   switch (piece) {
   case S:
@@ -131,7 +150,8 @@ const VRAM_PTR_TYPE* MapPieceToTileMapForBoardPosition(uint8_t piece, uint8_t x,
   return map_piece;
 }
 
-const VRAM_PTR_TYPE* MapBoardPositionToGridTileMap(uint8_t x, uint8_t y) {
+// Returns the empty tile map for a given board position
+static const VRAM_PTR_TYPE* MapBoardPositionToGridTileMap(uint8_t x, uint8_t y) {
   const VRAM_PTR_TYPE* map_piece = map_grid;
   if (x == 2 && y == 1)
     map_piece = map_grid_t;
@@ -204,7 +224,7 @@ static bool BCD_addConstant(uint8_t* const num, const uint8_t digits, uint8_t x)
   return false;
 }
 
-uint8_t GetDifficultyTileForLevel(uint8_t level)
+static uint8_t GetDifficultyTileForLevel(uint8_t level)
 {
   if ((level >= 1) && (level <= 10))
     return TILE_NUM_GREEN;
@@ -221,7 +241,6 @@ static void LoadLevel(const uint8_t level)
 {
   youWin = false;
   youLose = false;
-  playedYouLoseSound = false;
 
   // Draw PUZZLE ##
   DrawMap(ENTIRE_GAMEBOARD_LEFT, ENTIRE_GAMEBOARD_TOP - 3, map_tilt_puzzle);
@@ -248,28 +267,6 @@ static void LoadLevel(const uint8_t level)
                 MapPieceToTileMapForBoardPosition(piece, x, y));
     }
 }
-
-struct MOVE_INFO;
-typedef struct MOVE_INFO MOVE_INFO;
-
-struct MOVE_INFO {
-  uint8_t piece; // G or B
-  uint8_t xStart;
-  uint8_t yStart;
-  uint8_t xEnd;
-  uint8_t yEnd;
-  bool fellDownHole;
-
-  // Animation stuff
-  bool doneMoving;
-  int16_t x;
-  int16_t y;
-  int16_t dx;
-  int16_t dy;
-} __attribute__ ((packed));
-
-#define MAX_MOVABLE_PIECES 5
-MOVE_INFO moveInfo[MAX_MOVABLE_PIECES];
 
 static void TiltBoardLeft() {
   memset(moveInfo, 0, MAX_MOVABLE_PIECES * sizeof(MOVE_INFO));
@@ -800,7 +797,7 @@ const char HELP_TXT[] PROGMEM = {
 };
 
 // Loads 'len' compressed 'ramfont' tiles into user ram tiles starting at 'user_ram_tile_start' using 'fg_color' and 'bg_color'
-void RamFont_Load(const uint8_t* ramfont, uint8_t user_ram_tile_start, uint8_t len, uint8_t fg_color, uint8_t bg_color)
+static void RamFont_Load(const uint8_t* ramfont, uint8_t user_ram_tile_start, uint8_t len, uint8_t fg_color, uint8_t bg_color)
 {
   //SetUserRamTilesCount(len); // commented out to avoid flickering of the current level, call manually before this function is called
   if (fg_color == bg_color) { // This saves 10's of thousands of clock cycles when the condition is met
@@ -839,7 +836,7 @@ const uint8_t sparkle_effect[][64] PROGMEM =
 };
 
 // Instead of uncompressing all pixels at once for the RAM font, unveil it randomly pixel-by-pixel until it is fully displayed
-void RamFont_SparkleLoad(const uint8_t* ramfont, const uint8_t user_ram_tile_start, const uint8_t len, const uint8_t fg_color)
+static void RamFont_SparkleLoad(const uint8_t* ramfont, const uint8_t user_ram_tile_start, const uint8_t len, const uint8_t fg_color)
 {
   uint8_t shift[8];
   uint8_t bit = 0;
@@ -863,7 +860,7 @@ void RamFont_SparkleLoad(const uint8_t* ramfont, const uint8_t user_ram_tile_sta
 }
 
 // This allows the use of PROGMEM char* strings, rather than a uint8_t array of bytes
-void RamFont_Print_Minus_A(uint8_t x, uint8_t y, const char* message, uint8_t len)
+static void RamFont_Print_Minus_A(uint8_t x, uint8_t y, const char* message, uint8_t len)
 {
   for (uint8_t i = 0; i < len; ++i) {
     int8_t tileno = (int8_t)pgm_read_byte(&message[i]);
@@ -947,7 +944,7 @@ const uint8_t pgm_P_RETURN[] PROGMEM         = { RF_R, RF_E, RF_T, RF_U, RF_R, R
 const uint8_t pgm_P_RESET_TOKENS[] PROGMEM   = { RF_R, RF_E, RF_S, RF_E, RF_T, RAM_TILES_COUNT, RF_T, RF_O, RF_K, RF_E, RF_N, RF_S };
 const uint8_t pgm_P_PUZZLE[] PROGMEM        = { RF_P, RF_U, RF_Z, RF_Z, RF_L, RF_E };
 
-void RamFont_Print(uint8_t x, uint8_t y, const uint8_t* message, uint8_t len)
+static void RamFont_Print(uint8_t x, uint8_t y, const uint8_t* message, uint8_t len)
 {
   for (uint8_t i = 0; i < len; ++i) {
     int8_t tileno = (int8_t)pgm_read_byte(&message[i]);
@@ -956,7 +953,7 @@ void RamFont_Print(uint8_t x, uint8_t y, const uint8_t* message, uint8_t len)
   }
 }
 
-uint8_t RamFont_GetLevelColor(uint8_t level)
+static uint8_t RamFont_GetLevelColor(uint8_t level)
 {
   if ((level >= 1) && (level <= 10))
     return 0x20; // TILE_NUM_GREEN
@@ -969,7 +966,7 @@ uint8_t RamFont_GetLevelColor(uint8_t level)
   return 0xFF;
 }
 
-void RamFont_Load2Digits(const uint8_t* ramfont, uint8_t ramfont_index, uint8_t number, uint8_t fg_color, uint8_t bg_color)
+static void RamFont_Load2Digits(const uint8_t* ramfont, uint8_t ramfont_index, uint8_t number, uint8_t fg_color, uint8_t bg_color)
 {
   uint8_t digits[2] = {0};
   BCD_addConstant(digits, 2, number);
@@ -991,24 +988,14 @@ void RamFont_Load2Digits(const uint8_t* ramfont, uint8_t ramfont_index, uint8_t 
   }
 }
 
-void TileToRam(uint16_t toff, uint16_t roff, uint16_t len, const char* tiles, uint8_t* ramTile)
-{   // copy len number of tiles from tiles to ram tiles, use Abs below to give an absolute offset.
-   toff = toff << 6; // multiply by 64 to convert from ram tile index to actual address for pixel 0
-   roff = roff << 6;
-   len  = len << 6;
-   while (len--)
-     ramTile[roff++] = pgm_read_byte(tiles + toff++);
-}
-
 int main()
 {
   ClearVram();
   SetTileTable(titlescreen);
+  InitMusicPlayer(patches);
 
   BUTTON_INFO buttons;
   memset(&buttons, 0, sizeof(BUTTON_INFO));
-
-  InitMusicPlayer(patches);
 
  title_screen:
   ClearVram();
@@ -1031,12 +1018,12 @@ int main()
     int8_t prev_selection;
     int8_t selection = 0;
 
-#define TITLE_T_BACKGROUND 0
-#define TILE_T_SELECTION 1
+#define TITLE_TILE_NUM_BACKGROUND 0
+#define TITLE_TILE_NUM_SELECTION 1
 
     for (;;) {
       // Draw the menu selection indicator
-      SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
+      SetTile(9, 14 + 2 * selection, TITLE_TILE_NUM_SELECTION);
       prev_selection = selection;
 
       // Read the current state of the player's controller
@@ -1053,16 +1040,16 @@ int main()
         if (selection > 0) {
           selection--;
           TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
-          SetTile(9, 14 + 2 * prev_selection, TITLE_T_BACKGROUND);
-          SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
+          SetTile(9, 14 + 2 * prev_selection, TITLE_TILE_NUM_BACKGROUND);
+          SetTile(9, 14 + 2 * selection, TITLE_TILE_NUM_SELECTION);
           prev_selection = selection;
         }
       } else if (buttons.pressed & BTN_DOWN) {
         if (selection < 1) {
           selection++;
           TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
-          SetTile(9, 14 + 2 * prev_selection, TITLE_T_BACKGROUND);
-          SetTile(9, 14 + 2 * selection, TILE_T_SELECTION);
+          SetTile(9, 14 + 2 * prev_selection, TITLE_TILE_NUM_BACKGROUND);
+          SetTile(9, 14 + 2 * selection, TITLE_TILE_NUM_SELECTION);
           prev_selection = selection;
         }
       }
@@ -1205,7 +1192,10 @@ int main()
             LoadLevel(currentLevel);
             break;
           } else if (youWin) {
-            currentLevel = (currentLevel + 1) % 40;
+              if (currentLevel < 40)
+                currentLevel++;
+              else
+                currentLevel = 1;
             LoadLevel(currentLevel);
             break;
           }
@@ -1220,7 +1210,7 @@ int main()
 #define MENU_HEIGHT 5
 #define MENU_START_X 7
 #define MENU_START_Y 12
-#define TILE_MENU_BG TILE_NUM_BACKGROUND
+#define TILE_NUM_MENU_BACKGROUND TILE_NUM_BACKGROUND
 
         // Play a sound effect that indicates the popup menu, unfortunately if music is playing, a TriggerFx won't work
         TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
@@ -1265,7 +1255,7 @@ int main()
                             currentLevel, RamFont_GetLevelColor(currentLevel), 0x00);
 
         // Draw the menu background
-        Fill(MENU_START_X + 1, MENU_START_Y + 1, MENU_WIDTH - 2, MENU_HEIGHT - 2, TILE_MENU_BG);
+        Fill(MENU_START_X + 1, MENU_START_Y + 1, MENU_WIDTH - 2, MENU_HEIGHT - 2, TILE_NUM_MENU_BACKGROUND);
         SetRamTile(MENU_START_X, MENU_START_Y, RF_B_TL);
         for (uint8_t i = MENU_START_X + 1; i < MENU_START_X + MENU_WIDTH - 1; ++i)
           SetRamTile(i, MENU_START_Y, RF_B_T);
@@ -1313,7 +1303,7 @@ int main()
               selection--;
               TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
               for (uint8_t x = MENU_START_X + 1; x <= MENU_START_X + 3; ++x)
-                SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_MENU_BG);
+                SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_NUM_MENU_BACKGROUND);
               SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
               prev_selection = selection;
             }
@@ -1322,7 +1312,7 @@ int main()
               selection++;
               TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
               for (uint8_t x = MENU_START_X + 1; x <= MENU_START_X + 3; ++x)
-                SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_MENU_BG);
+                SetTile(x, MENU_START_Y + 1 + prev_selection, TILE_NUM_MENU_BACKGROUND);
               SetRamTile(MENU_START_X + 2, MENU_START_Y + 1 + selection, RF_ASTERISK);
               prev_selection = selection;
             }
@@ -1342,8 +1332,6 @@ int main()
               RamFont_Load2Digits(rf_digits,
                                   GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len,
                                   selectedLevel, RamFont_GetLevelColor(selectedLevel), 0x00);
-
-              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_NUM_BACKGROUND); // Not strictly necessary, a vestage
               TriggerNote(SFX_CHANNEL, SFX_MOUSE_DOWN, SFX_SPEED_MOUSE_DOWN, SFX_VOL_MOUSE_DOWN);
             } else if (buttons.pressed & BTN_RIGHT) {
               if (selectedLevel < 40)
@@ -1354,8 +1342,6 @@ int main()
               RamFont_Load2Digits(rf_digits,
                                   GAME_USER_RAM_TILES_COUNT + rf_popup_len + rf_popup_border_len,
                                   selectedLevel, RamFont_GetLevelColor(selectedLevel), 0x00);
-
-              SetTile(MENU_START_X + 5 + 11, MENU_START_Y + 3, TILE_NUM_BACKGROUND); // Not strictly necessary, a vestage
               TriggerNote(SFX_CHANNEL, SFX_MOUSE_UP, SFX_SPEED_MOUSE_UP, SFX_VOL_MOUSE_UP);
             }
           }

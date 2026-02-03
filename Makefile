@@ -39,7 +39,7 @@ KERNEL_OPTIONS += -DRESOLUTION_EXT=1
 #KERNEL_OPTIONS += -DSPRITES_AUTO_PROCESS=0
 #KERNEL_OPTIONS += -DCONTROLLERS_VSYNC_READ=0
 #KERNEL_OPTIONS += -DMUSIC_ENGINE=STREAM
-#KERNEL_OPTIONS += -DMIXER_WAVES=\"$(MIX_PATH_ESC)\"
+KERNEL_OPTIONS += -DMIXER_WAVES=\"$(MIX_PATH_ESC)\"
 
 
 ## Options common to compile, link and assembly rules
@@ -95,7 +95,7 @@ INCLUDES = -I"$(KERNEL_DIR)"
 DEPS  = Makefile
 
 ## Build
-all: ./data/titlescreen.inc ./data/tileset.inc ./data/midisong.inc ./data/PCM_slider_stop.inc ./data/PCM_slider_hole.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze
+all: ./data/titlescreen.inc ./data/tileset.inc ./data/PCM_slider_stop.inc ./data/PCM_slider_hole.inc ./data/PCM_mouse_down.inc ./data/PCM_mouse_up.inc $(TARGET) $(GAME).hex $(GAME).eep $(GAME).lss $(GAME).uze
 
 ## Compile Kernel files (prefix with .)
 .uzeboxVideoEngineCore.o: $(KERNEL_DIR)/uzeboxVideoEngineCore.s $(DEPS)
@@ -126,17 +126,17 @@ all: ./data/titlescreen.inc ./data/tileset.inc ./data/midisong.inc ./data/PCM_sl
 ./data/tileset.inc: ./data/tileset.png ./data/tileset.xml
 	$(UZEBIN_DIR)/gconvert ./data/tileset.xml
 
-./data/midisong.h: ./data/midisong.mid $(DEPS)
-	$(UZEBIN_DIR)/midiconv -f 8 ./data/midisong.mid ./data/midisong.h
-
-./data/midisong.inc: ./data/midisong.h ./data/mconvert.cfg
-	$(UZEBIN_DIR)/mconvert ./data/mconvert.cfg
-
 ./data/PCM_slider_stop.inc: ./data/PCM_slider_stop.raw
 	$(UZEBIN_DIR)/bin2hex ./data/PCM_slider_stop.raw ./data/PCM_slider_stop.inc
 
 ./data/PCM_slider_hole.inc: ./data/PCM_slider_hole.raw
 	$(UZEBIN_DIR)/bin2hex ./data/PCM_slider_hole.raw ./data/PCM_slider_hole.inc
+
+./data/PCM_mouse_down.inc: ./data/PCM_mouse_down.raw
+	$(UZEBIN_DIR)/bin2hex ./data/PCM_mouse_down.raw ./data/PCM_mouse_down.inc
+
+./data/PCM_mouse_up.inc: ./data/PCM_mouse_up.raw
+	$(UZEBIN_DIR)/bin2hex ./data/PCM_mouse_up.raw ./data/PCM_mouse_up.inc
 
 ## Link
 $(TARGET): $(OBJECTS) $(DEPS)
@@ -159,7 +159,7 @@ $(TARGET): $(OBJECTS) $(DEPS)
 ## Clean target
 .PHONY: clean
 clean:
-	-rm -rf ./data/titlescreen.inc ./data/tileset.inc ./data/midisong.h ./data/midisong.inc $(OBJECTS) $(TARGET) $(GAME).eep $(GAME).hex $(GAME).lss $(GAME).map $(GAME).uze $(OBJECTS:.o=.o.d)
+	-rm -rf ./data/titlescreen.inc ./data/tileset.inc ./data/PCM_slider_stop.inc ./data/PCM_slider_hole.inc ./data/PCM_mouse_down.inc ./data/PCM_mouse_up.inc $(OBJECTS) $(TARGET) $(GAME).eep $(GAME).hex $(GAME).lss $(GAME).map $(GAME).uze $(OBJECTS:.o=.o.d)
 
 ## Proper automatic dependency tracking requires the *.o and *.o.d files to be
 ## generated in the top level directory, so we hide the *.o and *.o.d files
