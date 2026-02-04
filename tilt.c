@@ -83,7 +83,7 @@ uint8_t board[BOARD_HEIGHT][BOARD_WIDTH] = {
 };
 
 typedef struct {
-  // Board state for a given tilt
+  // Board start/end state when tilting in a direction
   uint8_t piece; // G or B
   uint8_t xStart;
   uint8_t yStart;
@@ -262,8 +262,8 @@ static void LoadLevel(const uint8_t level)
       board[y][x] = piece;
 
       if (piece == S || piece == G || piece == B)
-        DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + GAMEPIECE_WIDTH * x,
-                GAMEBOARD_ACTIVE_AREA_TOP + GAMEPIECE_HEIGHT * y,
+        DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + x * GAMEPIECE_WIDTH,
+                GAMEBOARD_ACTIVE_AREA_TOP + y * GAMEPIECE_HEIGHT,
                 MapPieceToTileMapForBoardPosition(piece, x, y));
     }
 }
@@ -497,7 +497,7 @@ static void UpdatePhysicsLeft()
     if (moveInfo[move].dx < -WORLD_MAX_VELOCITY)
       moveInfo[move].dx = -WORLD_MAX_VELOCITY;
 
-    int16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    int16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * GAMEPIECE_WIDTH);
 
     if (moveInfo[move].x <= (xEnd << FP_SHIFT)) {
       moveInfo[move].x = xEnd << FP_SHIFT;
@@ -510,7 +510,7 @@ static void UpdatePhysicsLeft()
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole)
-        MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+        MapSprite2(move * GAMEPIECE_WIDTH * GAMEPIECE_HEIGHT, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
     }
   }
 }
@@ -530,7 +530,7 @@ static void UpdatePhysicsUp()
     if (moveInfo[move].dy < -WORLD_MAX_VELOCITY)
       moveInfo[move].dy = -WORLD_MAX_VELOCITY;
 
-    int16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+    int16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * GAMEPIECE_HEIGHT);
 
     if (moveInfo[move].y <= (yEnd << FP_SHIFT)) {
       moveInfo[move].y = yEnd << FP_SHIFT;
@@ -543,7 +543,7 @@ static void UpdatePhysicsUp()
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole)
-        MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+        MapSprite2(move * GAMEPIECE_WIDTH * GAMEPIECE_HEIGHT, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
     }
   }
 }
@@ -563,7 +563,7 @@ static void UpdatePhysicsRight()
     if (moveInfo[move].dx > WORLD_MAX_VELOCITY)
       moveInfo[move].dx = WORLD_MAX_VELOCITY;
 
-    int16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2);
+    int16_t xEnd = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * GAMEPIECE_WIDTH);
 
     if (moveInfo[move].x >= (xEnd << FP_SHIFT)) {
       moveInfo[move].x = xEnd << FP_SHIFT;
@@ -576,7 +576,7 @@ static void UpdatePhysicsRight()
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole)
-        MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+        MapSprite2(move * GAMEPIECE_WIDTH * GAMEPIECE_HEIGHT, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
     }
   }
 }
@@ -596,7 +596,7 @@ static void UpdatePhysicsDown()
     if (moveInfo[move].dy > WORLD_MAX_VELOCITY)
       moveInfo[move].dy = WORLD_MAX_VELOCITY;
 
-    int16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2);
+    int16_t yEnd = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * GAMEPIECE_HEIGHT);
 
     if (moveInfo[move].y >= (yEnd << FP_SHIFT)) {
       moveInfo[move].y = yEnd << FP_SHIFT;
@@ -609,7 +609,7 @@ static void UpdatePhysicsDown()
       }
       moveInfo[move].doneMoving = true;
       if (moveInfo[move].fellDownHole)
-        MapSprite2(move * 4, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
+        MapSprite2(move * GAMEPIECE_WIDTH * GAMEPIECE_HEIGHT, moveInfo[move].piece == G ? map_green_h : map_blue_h, 0);
     }
   }
 }
@@ -633,8 +633,8 @@ static void GravityAnimation(uint8_t direction)
     if (moveInfo[move].piece == 0)
       break;
 
-    int16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2);
-    int16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2);
+    int16_t xStart = TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * GAMEPIECE_WIDTH);
+    int16_t yStart = TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * GAMEPIECE_HEIGHT);
 
     moveInfo[move].x = xStart << FP_SHIFT;
     moveInfo[move].y = yStart << FP_SHIFT;
@@ -653,16 +653,16 @@ static void GravityAnimation(uint8_t direction)
       TriggerNote(SFX_CHANNEL, SFX_SLIDER_STOP, SFX_SPEED_SLIDER_STOP, SFX_VOL_SLIDER_STOP + 24 * numSlidersHitEndStops);
 
     if (playFellDownHoleSound)
-      TriggerNote(SFX_CHANNEL, SFX_SLIDER_HOLE, SFX_SPEED_SLIDER_HOLE, SFX_VOL_SLIDER_HOLE + 24 * 5);
+      TriggerNote(SFX_CHANNEL, SFX_SLIDER_HOLE, SFX_SPEED_SLIDER_HOLE, SFX_VOL_SLIDER_HOLE + 24 * MAX_MOVABLE_PIECES);
 
     for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
       if (moveInfo[move].piece == 0)
         break;
 
-        MoveSprite(move * 4,
+        MoveSprite(move * GAMEPIECE_WIDTH * GAMEPIECE_HEIGHT,
                    NEAREST_SCREEN_PIXEL(moveInfo[move].x),
                    NEAREST_SCREEN_PIXEL(moveInfo[move].y),
-                   2, 2);
+                   GAMEPIECE_WIDTH, GAMEPIECE_HEIGHT);
 
         allDoneMoving &= moveInfo[move].doneMoving;
     }
@@ -683,14 +683,14 @@ static void AnimateBoard(uint8_t direction)
     if (moveInfo[move].piece == 0)
       break;
 
-    MapSprite2(move * 4, moveInfo[move].piece == G ? map_green : map_blue, 0);
-    MoveSprite(move * 4,
-               TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2),
-               TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2),
-               2, 2);
+    MapSprite2(move * GAMEPIECE_WIDTH * GAMEPIECE_HEIGHT, moveInfo[move].piece == G ? map_green : map_blue, 0);
+    MoveSprite(move * GAMEPIECE_WIDTH * GAMEPIECE_HEIGHT,
+               TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * GAMEPIECE_WIDTH),
+               TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * GAMEPIECE_HEIGHT),
+               GAMEPIECE_WIDTH, GAMEPIECE_HEIGHT);
 
-    DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * 2,
-            GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * 2,
+    DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xStart * GAMEPIECE_WIDTH,
+            GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yStart * GAMEPIECE_HEIGHT,
             MapBoardPositionToGridTileMap(moveInfo[move].xStart, moveInfo[move].yStart));
   }
 
@@ -700,10 +700,10 @@ static void AnimateBoard(uint8_t direction)
   for (uint8_t move = 0; move < MAX_MOVABLE_PIECES; ++move) {
     if (moveInfo[move].piece == 0)
       break;
-    MoveSprite(move * 4,
-               TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * 2),
-               TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * 2),
-               2, 2);
+    MoveSprite(move * GAMEPIECE_WIDTH * GAMEPIECE_HEIGHT,
+               TILE_WIDTH * (GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * GAMEPIECE_WIDTH),
+               TILE_HEIGHT * (GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * GAMEPIECE_HEIGHT),
+               GAMEPIECE_WIDTH, GAMEPIECE_HEIGHT);
   }
 
   // Turn all G and B sprites back into tile pieces in their end locations, and hide all the sprites
@@ -711,8 +711,8 @@ static void AnimateBoard(uint8_t direction)
     if (moveInfo[move].piece == 0)
       break;
     if (moveInfo[move].piece == G) // Draw green sliders first in case both fell in the exit hole at the same time
-      DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + GAMEPIECE_WIDTH * moveInfo[move].xEnd,
-              GAMEBOARD_ACTIVE_AREA_TOP + GAMEPIECE_HEIGHT * moveInfo[move].yEnd,
+      DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * GAMEPIECE_WIDTH,
+              GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * GAMEPIECE_HEIGHT,
               MapPieceToTileMapForBoardPosition(moveInfo[move].piece, moveInfo[move].xEnd, moveInfo[move].yEnd));
   }
 
@@ -720,8 +720,8 @@ static void AnimateBoard(uint8_t direction)
     if (moveInfo[move].piece == 0)
       break;
     if (moveInfo[move].piece == B) // Ensure blue sliders that fell in the hole will always be drawn on top
-      DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + GAMEPIECE_WIDTH * moveInfo[move].xEnd,
-              GAMEBOARD_ACTIVE_AREA_TOP + GAMEPIECE_HEIGHT * moveInfo[move].yEnd,
+      DrawMap(GAMEBOARD_ACTIVE_AREA_LEFT + moveInfo[move].xEnd * GAMEPIECE_WIDTH,
+              GAMEBOARD_ACTIVE_AREA_TOP + moveInfo[move].yEnd * GAMEPIECE_HEIGHT,
               MapPieceToTileMapForBoardPosition(moveInfo[move].piece, moveInfo[move].xEnd, moveInfo[move].yEnd));
   }
 

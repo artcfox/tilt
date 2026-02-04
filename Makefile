@@ -41,6 +41,11 @@ KERNEL_OPTIONS += -DRESOLUTION_EXT=1
 #KERNEL_OPTIONS += -DMUSIC_ENGINE=STREAM
 KERNEL_OPTIONS += -DMIXER_WAVES=\"$(MIX_PATH_ESC)\"
 
+#saves 256 bytes of flash
+#KERNEL_OPTIONS += -DNO_EEPROM_FORMAT=1
+
+#saves 596 bytes of Flash and 32 bytes of RAM!
+#KERNEL_OPTIONS += -DNO_PC_SLIDE=1 -DNO_PC_LOOP=1 -DNO_PC_TREMOLO=1 -DNO_CHAN_EXPRESSION=1
 
 ## Options common to compile, link and assembly rules
 COMMON = -mmcu=$(MCU)
